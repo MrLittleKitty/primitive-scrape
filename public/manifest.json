@@ -5,5 +5,15 @@
   "manifest_version": 3,
   "action": {
     "default_popup": "index.html"
-  }
+  },
+  "permissions": ["storage", "activeTab", "scripting"],
+  "background": {
+    "service_worker": "worker.js"
+  },
+  "content_scripts": [
+    {
+      "matches": ["https://*.google.com/*"],
+      "js": ["content.js"]
+    }
+  ]
 }
