@@ -1,0 +1,9 @@
+{
+  "name": "Primitive Scrape",
+  "description": "An extension to scrape data off of websites that you visit as a normal person",
+  "version": "1.0",
+  "manifest_version": 3,
+  "action": {
+    "default_popup": "index.html"
+  }
+}
