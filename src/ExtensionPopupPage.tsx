@@ -1,6 +1,7 @@
 import React from 'react';
 import {tab} from "@testing-library/user-event/dist/tab";
 import {ScrapeMessage, TYPE_SCRAPE} from "./chrome/MessagePassing";
+import {wait} from "@testing-library/user-event/dist/utils";
 
 
 interface ExtensionPopupPageState {
@@ -22,7 +23,7 @@ export default class ExtensionPopupPage extends React.Component<any, ExtensionPo
         chrome.scripting.executeScript({
           target: {tabId: id, allFrames: true},
           files: ['content.js'],
-        }, () => {
+        }, (results) => {
           chrome.tabs.sendMessage<ScrapeMessage>(id, {
             type: TYPE_SCRAPE
           });

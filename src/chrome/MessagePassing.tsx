@@ -7,12 +7,12 @@ export interface ScrapeMessage {
 }
 
 export interface ScrapeResponse {
-    body: HTMLElement
+    body: string | null
 }
 
 export interface ParseMessage {
     type: string
-    body: HTMLElement
+    body: string | null
 }
 
 export interface ParseResponse {
