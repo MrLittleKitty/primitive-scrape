@@ -7,6 +7,17 @@ import {
   TYPE_PARSE, TYPE_PARSE_SUCCEEDED,
   TYPE_SCRAPE
 } from "./chrome/MessagePassing";
+import {Box, Button} from "@mui/material";
+import CurrentContextViewerComponent from "./components/CurrentContextViewerComponent";
+import {
+    CHANGE_CONTEXT_POSITION,
+    CURRENT_CONTEXT_VIEWER_POSITION,
+    MAIN_BUTTON_POSITION,
+    SETTINGS_POSITION, TEMPLATE_POSITION
+} from "./components/PositionsAndDimensions";
+import ChangeContextComponent from "./components/ChangeContextComponent";
+import SettingsComponent from "./components/SettingsComponent";
+import TemplateViewerComponent from "./components/TemplateViewerComponent";
 
 
 interface ExtensionPopupPageState {
@@ -60,15 +71,54 @@ export default class ExtensionPopupPage extends React.Component<any, ExtensionPo
 
   render() {
     return (
-        <>
-          <button onClick={this.sendScrapeMessage}>
+        <Box sx={{
+          height: "100%",
+          width: "100%",
+
+        }}>
+          <CurrentContextViewerComponent
+              sx={{
+                position: "absolute",
+                ...CURRENT_CONTEXT_VIEWER_POSITION,
+              }}
+          />
+
+          <ChangeContextComponent
+              sx={{
+                position: "absolute",
+                ...CHANGE_CONTEXT_POSITION,
+              }}
+          />
+
+          <SettingsComponent
+              sx={{
+                position: "absolute",
+                ...SETTINGS_POSITION
+              }}
+          />
+
+          <TemplateViewerComponent
+            sx={{
+                position: "absolute",
+                ...TEMPLATE_POSITION,
+            }}
+
+          />
+
+          <Button
+              sx={{
+                position: "absolute",
+                ...MAIN_BUTTON_POSITION,
+              }}
+              variant="contained"
+              onClick={this.sendScrapeMessage}>
             Scrape this page
-          </button>
+          </Button>
 
           {this.state.parsedFields.length > 0 &&
               (<h1>Address: {this.state.parsedFields[0]}</h1>)
           }
-        </>
+        </Box>
     );
   }
 }
