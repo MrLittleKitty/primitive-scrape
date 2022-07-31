@@ -1,10 +1,12 @@
-export interface ParsableField {
+import { Element } from "parse5/dist/tree-adapters/default";
+
+export interface ParseFieldTarget {
     name: string,
     nodeSelector: string,
-    processorFunction: (elements: Element[]) => string,
+    processorFunctionName: string
 }
 
 export interface ParsedField {
-    parser: ParsableField,
+    parser: ParseFieldTarget,
     parsedValue: string,
 }

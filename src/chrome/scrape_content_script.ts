@@ -4,9 +4,10 @@ function scrapeBody(request: ScrapeMessage) {
     if(document.readyState === "complete") {
         chrome.runtime.sendMessage<ParseMessage>({
             type: TYPE_PARSE,
+            uid: request.uid,
             body: document.body.outerHTML,
-            context: request.context,
-            template: request.template
+            templateName: request.templateName,
+            parseFields: request.parseFields,
         })
     }
     else {

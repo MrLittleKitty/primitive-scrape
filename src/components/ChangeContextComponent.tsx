@@ -2,9 +2,6 @@ import React from "react";
 import {Box, SxProps, Theme} from "@mui/material";
 import {CHANGE_CONTEXT_DIMENSIONS} from "./PositionsAndDimensions";
 
-const height = 500;
-const width = 500;
-
 interface ChangeContextComponentProps {
     sx: SxProps<Theme>
 }

@@ -36,11 +36,12 @@ function mapToMenuItem(template: ParsingTemplate) {
 interface TemplateViewerComponentProps {
     sx: SxProps<Theme>,
     currentTemplate: ParsingTemplate,
+    templates: ParsingTemplate[],
     templateChangedFunc: (selectedTemplate: ParsingTemplate) => void
 }
 
 interface TemplateViewerComponentState {
-
+    value: string
 }
 
 export default class TemplateViewerComponent extends React.Component<TemplateViewerComponentProps, TemplateViewerComponentState> {
@@ -52,15 +53,23 @@ export default class TemplateViewerComponent extends React.Component<TemplateVie
     handleTemplateChange = (event: SelectChangeEvent<string>) => {
         const selectedTemplateName = event.target.value;
         if(selectedTemplateName !== this.props.currentTemplate.name) {
-            const value = this.props.currentTemplate.parentTemplate?.childTemplates.find((value) => value.name === selectedTemplateName)
+            const templatesToSearch = this.concatAllTemplates()
+            const value = templatesToSearch.find((value) => value.name === selectedTemplateName)
             if(value) {
                 this.props.templateChangedFunc(value);
             }
         }
     }
 
+    concatAllTemplates = () : ParsingTemplate[] => {
+        if(this.props.currentTemplate.parentTemplate == null) {
+            return this.props.templates;
+        }
+        return [...this.props.templates, ...this.props.currentTemplate.parentTemplate.childTemplates.filter(temp => temp.name !== this.props.currentTemplate.name)]
+    }
 
     render() {
+        const templates = this.concatAllTemplates();
         return (
             <Box sx={{
                 ...this.props.sx,
@@ -94,10 +103,7 @@ export default class TemplateViewerComponent extends React.Component<TemplateVie
                     input={<OutlinedInput label="Template" />}
                     MenuProps={MenuProps}
                 >
-                    {this.props.currentTemplate.parentTemplate == null ?
-                        mapToMenuItem(this.props.currentTemplate) :
-                        this.props.currentTemplate.parentTemplate.childTemplates.map(mapToMenuItem)
-                    }
+                    {templates.map(mapToMenuItem)}
                 </Select>
             </Box>
         )

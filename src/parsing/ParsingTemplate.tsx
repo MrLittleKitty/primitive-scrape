@@ -1,13 +1,13 @@
-import {ParsableField} from "./ParsedField";
+import {ParseFieldTarget} from "./ParsedField";
 import {ParsedPage} from "./ParsedPage";
-import {TextNode} from "parse5/dist/tree-adapters/default";
+import {TEXT_EXTRACT_NAME} from "../chrome/ProcessorFunctions";
 
 export interface ParsingTemplate {
     parentTemplate: ParsingTemplate | null,
     childTemplates: ParsingTemplate[]
 
     name: string,
-    parsableFields: ParsableField[],
+    parsableFields: ParseFieldTarget[],
     contextNameExtractorFunc: (page: ParsedPage) => string
 }
 
@@ -33,25 +33,6 @@ let UNIT_TEMPLATE : ParsingTemplate = {
     }
 }
 
-function _isTextNode(node: any) : node is TextNode {
-    return 'value' in node;
-}
-
-function extractText(element: Element) : string {
-    const childNode = element?.childNodes[0]
-    if (childNode && _isTextNode(childNode)) {
-        return childNode.value
-    }
-    return ""
-}
-
-function textExtractor(elements: Element[]) : string {
-    if(elements.length === 1) {
-        return extractText(elements[0])
-    }
-    return ""
-}
-
 let BUILDING_TEMPLATE : ParsingTemplate = {
     parentTemplate: null,
     childTemplates: [UNIT_TEMPLATE],
@@ -61,13 +42,13 @@ let BUILDING_TEMPLATE : ParsingTemplate = {
         {
           name: "Name",
           nodeSelector: "#content > main > div.row.DetailsPage > article:nth-child(4) > section:nth-child(9) > div > div.backend_data.BuildingInfo-item > a",
-          processorFunction: textExtractor,
+          processorFunctionName: TEXT_EXTRACT_NAME,
         },
         {
             // This is for StreetEasy right now
             name: "Address",
             nodeSelector: "#content > main > div.row.DetailsPage > article.right-two-fifths > section.main-info > h1 > a",
-            processorFunction: textExtractor,
+            processorFunctionName: TEXT_EXTRACT_NAME,
         }
     ],
     contextNameExtractorFunc: (page) => {
@@ -79,7 +60,18 @@ let BUILDING_TEMPLATE : ParsingTemplate = {
     }
 }
 
+let TEST_TEMPLATE : ParsingTemplate = {
+    parentTemplate: null,
+    childTemplates: [],
+
+    name: "Test",
+    parsableFields: [],
+    contextNameExtractorFunc: (page) => {
+        return ""
+    }
+}
+
 UNIT_TEMPLATE.parentTemplate = BUILDING_TEMPLATE
 UNIT_REF_TEMPLATE.parentTemplate = UNIT_TEMPLATE
 
-export const STREET_EASY_BUILDING_EXPLORER_TEMPLATES : ParsingTemplate[] = [BUILDING_TEMPLATE]
+export const STREET_EASY_BUILDING_EXPLORER_TEMPLATES : ParsingTemplate[] = [BUILDING_TEMPLATE, TEST_TEMPLATE]
