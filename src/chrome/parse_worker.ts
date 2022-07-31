@@ -36,12 +36,14 @@ function acceptMessage(request: ParseMessage, sender: chrome.runtime.MessageSend
         console.log("Document: ", request.body)
         if(request.body != null) {
             const parsedFields = parseBody(request.body)
-            parsedFields.forEach((entry) => {
-                console.log("Worker parsed field", entry)
-            })
             chrome.runtime.sendMessage<ParseSucceededMessage>({
                 type: TYPE_PARSE_SUCCEEDED,
-                parsedFields: parsedFields
+                context: request.context,
+                template: request.template,
+                result: {
+                    url: document.location.href,
+                    parsedFields: [] //TODO---Implementation
+                }
             });
 
             sendResponse({})

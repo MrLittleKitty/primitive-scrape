@@ -1,10 +1,12 @@
 import {ParseMessage, ScrapeMessage, ScrapeResponse, TYPE_PARSE, TYPE_SCRAPE} from "./MessagePassing";
 
-function scrapeBody() {
+function scrapeBody(request: ScrapeMessage) {
     if(document.readyState === "complete") {
         chrome.runtime.sendMessage<ParseMessage>({
             type: TYPE_PARSE,
-            body: document.body.outerHTML
+            body: document.body.outerHTML,
+            context: request.context,
+            template: request.template
         })
     }
     else {
@@ -19,7 +21,7 @@ function acceptMessage(request: ScrapeMessage, sender: chrome.runtime.MessageSen
     console.log("Scraping content script received a message")
     if(request.type === TYPE_SCRAPE) {
         console.log("Ready state:", document.readyState)
-        scrapeBody();
+        scrapeBody(request);
         sendResponse({body: document.body.outerHTML});
     }
 

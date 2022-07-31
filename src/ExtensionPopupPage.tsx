@@ -24,8 +24,12 @@ import {ParsingTemplate, STREET_EASY_BUILDING_EXPLORER_TEMPLATES} from "./parsin
 
 interface ExtensionPopupPageState {
     context: ParsingContext | null,
+
     templates: ParsingTemplate[],
-    currentTemplate: ParsingTemplate
+    currentTemplate: ParsingTemplate,
+
+    moveToContext: boolean,
+    previewScrape: boolean,
 }
 
 export default class ExtensionPopupPage extends React.Component<any, ExtensionPopupPageState> {
@@ -35,44 +39,44 @@ export default class ExtensionPopupPage extends React.Component<any, ExtensionPo
     this.state = {
         context: null,
         templates: STREET_EASY_BUILDING_EXPLORER_TEMPLATES,
-        currentTemplate: STREET_EASY_BUILDING_EXPLORER_TEMPLATES[0]
+        currentTemplate: STREET_EASY_BUILDING_EXPLORER_TEMPLATES[0],
+
+        moveToContext: true,
+        previewScrape: true,
     }
   }
 
   componentDidMount() {
-    chrome.runtime.onMessage.addListener(this.listenForParsedFields);
+    chrome.runtime.onMessage.addListener(this.listenForParseResult);
   }
 
 
-  listenForParsedFields = (request: ParseSucceededMessage, sender: chrome.runtime.MessageSender, responseFunc: (response: any) => void) => {
+  listenForParseResult = (request: ParseSucceededMessage, sender: chrome.runtime.MessageSender, responseFunc: (response: any) => void) => {
     console.log("Popup received message:", request)
     if(request.type === TYPE_PARSE_SUCCEEDED) {
-      console.log("Popup received success message:", request.parsedFields)
-      request.parsedFields.forEach((entry) => {
-        console.log("Entry:",entry)
-      })
-      // this.setState({
-      //   parsedFields: request.parsedFields
-      // })
+        //TODO---Implementation
     }
     responseFunc({});
     return true;
   }
 
   sendScrapeMessage = () => {
-    chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
-      if(tabs[0].id != null) {
-        const id = tabs[0].id;
-        chrome.scripting.executeScript({
-          target: {tabId: id, allFrames: false},
-          files: ['content.js'],
-        }, (results) => {
-          chrome.tabs.sendMessage<ScrapeMessage>(id, {
-            type: TYPE_SCRAPE
-          });
+        const instance = this;
+        chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
+          if(tabs[0].id != null) {
+            const id = tabs[0].id;
+            chrome.scripting.executeScript({
+              target: {tabId: id, allFrames: false},
+              files: ['content.js'],
+            }, (results) => {
+              chrome.tabs.sendMessage<ScrapeMessage>(id, {
+                  type: TYPE_SCRAPE,
+                  context: instance.state.context,
+                  template: instance.state.currentTemplate
+              });
+            });``
+          }
         });
-      }
-    });
   }
 
   render() {

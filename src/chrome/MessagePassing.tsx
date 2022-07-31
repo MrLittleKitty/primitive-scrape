@@ -1,3 +1,6 @@
+import {ParsingContext} from "../parsing/ParsingContext";
+import {ParsingTemplate} from "../parsing/ParsingTemplate";
+import {ParsedPage} from "../parsing/ParsedPage";
 
 export const TYPE_SCRAPE = "scape-message"
 export const TYPE_PARSE = "parse-message"
@@ -8,19 +11,21 @@ export interface Message {
 }
 
 export interface ScrapeMessage extends Message {
+    context: ParsingContext | null,
+    template: ParsingTemplate
 }
 
 export interface ScrapeResponse {
 
 }
 
-export interface ParseMessage extends Message {
+export interface ParseMessage extends ScrapeMessage {
     body: string | null
 }
 
 export interface ParseResponse {
 }
 
-export interface ParseSucceededMessage extends Message {
-    parsedFields: string[]
+export interface ParseSucceededMessage extends ScrapeMessage {
+    result: ParsedPage
 }
