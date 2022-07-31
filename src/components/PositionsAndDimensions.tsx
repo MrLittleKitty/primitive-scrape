@@ -1,5 +1,5 @@
 const PADDING = 5
-const SEPARATION = 10
+export const SEPARATION = 10
 
 const USABLE_WIDTH = 800 - (PADDING*2);
 const USABLE_HEIGHT = 600 - (PADDING*2)

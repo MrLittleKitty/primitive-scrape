@@ -18,10 +18,14 @@ import {
 import ChangeContextComponent from "./components/ChangeContextComponent";
 import SettingsComponent from "./components/SettingsComponent";
 import TemplateViewerComponent from "./components/TemplateViewerComponent";
+import {ParsingContext} from "./parsing/ParsingContext";
+import {ParsingTemplate, STREET_EASY_BUILDING_EXPLORER_TEMPLATES} from "./parsing/ParsingTemplate";
 
 
 interface ExtensionPopupPageState {
-  parsedFields: string[]
+    context: ParsingContext | null,
+    templates: ParsingTemplate[],
+    currentTemplate: ParsingTemplate
 }
 
 export default class ExtensionPopupPage extends React.Component<any, ExtensionPopupPageState> {
@@ -29,7 +33,9 @@ export default class ExtensionPopupPage extends React.Component<any, ExtensionPo
   constructor(props: any) {
     super(props);
     this.state = {
-      parsedFields: []
+        context: null,
+        templates: STREET_EASY_BUILDING_EXPLORER_TEMPLATES,
+        currentTemplate: STREET_EASY_BUILDING_EXPLORER_TEMPLATES[0]
     }
   }
 
@@ -45,9 +51,9 @@ export default class ExtensionPopupPage extends React.Component<any, ExtensionPo
       request.parsedFields.forEach((entry) => {
         console.log("Entry:",entry)
       })
-      this.setState({
-        parsedFields: request.parsedFields
-      })
+      // this.setState({
+      //   parsedFields: request.parsedFields
+      // })
     }
     responseFunc({});
     return true;
@@ -102,7 +108,12 @@ export default class ExtensionPopupPage extends React.Component<any, ExtensionPo
                 position: "absolute",
                 ...TEMPLATE_POSITION,
             }}
-
+            currentTemplate={this.state.currentTemplate}
+            templateChangedFunc={(template) => {
+                this.setState({
+                    currentTemplate: template
+                })
+            }}
           />
 
           <Button
@@ -114,10 +125,6 @@ export default class ExtensionPopupPage extends React.Component<any, ExtensionPo
               onClick={this.sendScrapeMessage}>
             Scrape this page
           </Button>
-
-          {this.state.parsedFields.length > 0 &&
-              (<h1>Address: {this.state.parsedFields[0]}</h1>)
-          }
         </Box>
     );
   }
