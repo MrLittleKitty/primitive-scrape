@@ -20,7 +20,7 @@ export const CURRENT_CONTEXT_VIEWER_POSITION = {
 }
 
 export const CURRENT_CONTEXT_VIEWER_DIMENSIONS : Dimensions = {
-    height: 450,
+    height: 400,
     width: 200
 }
 

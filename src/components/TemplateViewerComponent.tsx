@@ -6,7 +6,7 @@ import {ParsingTemplate, ParsingTemplateMap} from "../parsing/ParsingTemplate";
 const MenuProps = {
     PaperProps: {
         style: {
-            maxHeight: TEMPLATE_DIMENSIONS.height/2,
+            maxHeight: TEMPLATE_DIMENSIONS.height,
             width: TEMPLATE_DIMENSIONS.width,
         },
     },
