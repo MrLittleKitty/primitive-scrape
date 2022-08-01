@@ -24,6 +24,7 @@ import {ParsedPage} from "./parsing/ParsedPage";
 import ScrapedDataPreviewComponent from "./components/ScrapedDataPreviewComponent";
 import {ParsedDataPreview} from "./parsing/ParsedDataPreview";
 import { v4 as uuidv4 } from 'uuid';
+import {newLocalStorage, StorageInterface} from "./chrome/ChromeStorage";
 
 interface ScrapeMessageContext {
     context: ParsingContext | null,
@@ -34,7 +35,7 @@ interface ExtensionPopupPageState {
     currentContext: ParsingContext | null,
 
     templates: ParsingTemplate[],
-    currentTemplate: ParsingTemplate,
+    currentTemplate: StorageInterface<ParsingTemplate>,
 
     scrapeMessageContexts: Map<string, ScrapeMessageContext>
 
@@ -52,7 +53,7 @@ export default class ExtensionPopupPage extends React.Component<any, ExtensionPo
         templates: STREET_EASY_BUILDING_EXPLORER_TEMPLATES,
 
         currentContext: null,
-        currentTemplate: STREET_EASY_BUILDING_EXPLORER_TEMPLATES[0],
+        currentTemplate: newLocalStorage("currentTemplate", STREET_EASY_BUILDING_EXPLORER_TEMPLATES[0]),
 
         scrapeMessageContexts: new Map<string, ScrapeMessageContext>(),
 
@@ -61,6 +62,9 @@ export default class ExtensionPopupPage extends React.Component<any, ExtensionPo
         moveToContext: true,
         previewScrape: true,
     }
+    this.state.currentTemplate.load().then(value => {
+        this.forceUpdate();
+    });
   }
 
   componentDidMount() {
@@ -104,11 +108,10 @@ export default class ExtensionPopupPage extends React.Component<any, ExtensionPo
   }
 
   sendScrapeMessage = () => {
-        const instance = this;
         const uid = uuidv4();
         const messageContext : ScrapeMessageContext = {
             context: this.state.currentContext,
-            template: this.state.currentTemplate
+            template: this.state.currentTemplate.get()
         }
         this.state.scrapeMessageContexts.set(uid, messageContext)
 
@@ -174,11 +177,13 @@ export default class ExtensionPopupPage extends React.Component<any, ExtensionPo
                 position: "absolute",
                 ...TEMPLATE_POSITION,
             }}
-            currentTemplate={this.state.currentTemplate}
+            currentTemplate={this.state.currentTemplate.get()}
             templates={this.state.templates}
             templateChangedFunc={(template) => {
-                this.setState({
-                    currentTemplate: template
+                this.setState(oldState => {
+                    return {
+                        currentTemplate: oldState.currentTemplate.update(template)
+                    }
                 })
             }}
           />

@@ -1,41 +1,36 @@
 import {ParseFieldTarget} from "./ParsedField";
-import {ParsedPage} from "./ParsedPage";
 import {TEXT_EXTRACT_NAME} from "../chrome/ProcessorFunctions";
 
 export interface ParsingTemplate {
-    parentTemplate: ParsingTemplate | null,
-    childTemplates: ParsingTemplate[]
+    parentTemplateKey: string | null,
+    childTemplatesKey: string[]
 
     name: string,
     parsableFields: ParseFieldTarget[],
-    contextNameExtractorFunc: (page: ParsedPage) => string
+    fieldToExtractContextNameFrom: string,
 }
 
 let UNIT_REF_TEMPLATE : ParsingTemplate = {
-    parentTemplate: null,
-    childTemplates: [],
+    parentTemplateKey: "Unit",
+    childTemplatesKey: [],
 
     name: "Reference",
     parsableFields: [],
-    contextNameExtractorFunc: (page) => {
-        return ""
-    }
+    fieldToExtractContextNameFrom: "Name"
 }
 
 let UNIT_TEMPLATE : ParsingTemplate = {
-    parentTemplate: null,
-    childTemplates: [UNIT_REF_TEMPLATE],
+    parentTemplateKey: "Building",
+    childTemplatesKey: ["Reference"],
 
     name: "Unit",
     parsableFields: [],
-    contextNameExtractorFunc: (page) => {
-        return ""
-    }
+    fieldToExtractContextNameFrom: "Name"
 }
 
 let BUILDING_TEMPLATE : ParsingTemplate = {
-    parentTemplate: null,
-    childTemplates: [UNIT_TEMPLATE],
+    parentTemplateKey: null,
+    childTemplatesKey: ["Unit"],
 
     name: "Building",
     parsableFields: [
@@ -51,27 +46,16 @@ let BUILDING_TEMPLATE : ParsingTemplate = {
             processorFunctionName: TEXT_EXTRACT_NAME,
         }
     ],
-    contextNameExtractorFunc: (page) => {
-        const parsedFields = page.parsedFields.filter((value) => value.parser.name === "Name")
-        if(parsedFields.length === 1) {
-            return parsedFields[0].parsedValue
-        }
-        return ""
-    }
+    fieldToExtractContextNameFrom: "Name"
 }
 
 let TEST_TEMPLATE : ParsingTemplate = {
-    parentTemplate: null,
-    childTemplates: [],
+    parentTemplateKey: null,
+    childTemplatesKey: [],
 
     name: "Test",
     parsableFields: [],
-    contextNameExtractorFunc: (page) => {
-        return ""
-    }
+    fieldToExtractContextNameFrom: "Name"
 }
 
-UNIT_TEMPLATE.parentTemplate = BUILDING_TEMPLATE
-UNIT_REF_TEMPLATE.parentTemplate = UNIT_TEMPLATE
-
-export const STREET_EASY_BUILDING_EXPLORER_TEMPLATES : ParsingTemplate[] = [BUILDING_TEMPLATE, TEST_TEMPLATE]
+export const STREET_EASY_BUILDING_EXPLORER_TEMPLATES : ParsingTemplate[] = [BUILDING_TEMPLATE, UNIT_TEMPLATE, UNIT_REF_TEMPLATE, TEST_TEMPLATE]

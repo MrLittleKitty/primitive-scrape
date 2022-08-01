@@ -53,7 +53,7 @@ export default class TemplateViewerComponent extends React.Component<TemplateVie
     handleTemplateChange = (event: SelectChangeEvent<string>) => {
         const selectedTemplateName = event.target.value;
         if(selectedTemplateName !== this.props.currentTemplate.name) {
-            const templatesToSearch = this.concatAllTemplates()
+            const templatesToSearch = this.props.templates;
             const value = templatesToSearch.find((value) => value.name === selectedTemplateName)
             if(value) {
                 this.props.templateChangedFunc(value);
@@ -61,15 +61,15 @@ export default class TemplateViewerComponent extends React.Component<TemplateVie
         }
     }
 
-    concatAllTemplates = () : ParsingTemplate[] => {
-        if(this.props.currentTemplate.parentTemplate == null) {
-            return this.props.templates;
-        }
-        return [...this.props.templates, ...this.props.currentTemplate.parentTemplate.childTemplates.filter(temp => temp.name !== this.props.currentTemplate.name)]
-    }
+    // concatAllTemplates = () : ParsingTemplate[] => {
+    //     if(this.props.currentTemplate.parentTemplateKey == null) {
+    //         return this.props.templates;
+    //     }
+    //     return [...this.props.templates, ...this.props.currentTemplate.parentTemplate.childTemplates.filter(temp => temp.name !== this.props.currentTemplate.name)]
+    // }
 
     render() {
-        const templates = this.concatAllTemplates();
+        const templates = this.props.templates;
         return (
             <Box sx={{
                 ...this.props.sx,
