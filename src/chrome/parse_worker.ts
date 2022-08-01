@@ -36,6 +36,7 @@ function acceptMessage(request: ParseMessage, sender: chrome.runtime.MessageSend
             chrome.runtime.sendMessage<ParseSucceededMessage>({
                 type: TYPE_PARSE_SUCCEEDED,
                 uid: request.uid,
+                parentContextUid: request.parentContextUid,
                 templateName: request.templateName,
                 parseFields: request.parseFields,
                 result: {

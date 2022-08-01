@@ -5,6 +5,7 @@ function scrapeBody(request: ScrapeMessage) {
         chrome.runtime.sendMessage<ParseMessage>({
             type: TYPE_PARSE,
             uid: request.uid,
+            parentContextUid: request.parentContextUid,
             body: document.body.outerHTML,
             templateName: request.templateName,
             parseFields: request.parseFields,

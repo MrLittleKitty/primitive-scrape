@@ -1,13 +1,16 @@
-import {ParsingTemplate} from "./ParsingTemplate";
 import {ParsedPage} from "./ParsedPage";
 
-export interface ParsingContext {
-    parentContext: ParsingContext | null,
-    childContexts: ParsingContext[]
+export type ContextMap = {
+    [key: string] : ParsingContext
+}
 
-    contextUID: string,
+export interface ParsingContext {
+    parentContextUid: string | null,
+    childContextsUids: string[]
+
+    uid: string,
     name: string,
 
     page: ParsedPage,
-    template: ParsingTemplate
+    templateName: string
 }

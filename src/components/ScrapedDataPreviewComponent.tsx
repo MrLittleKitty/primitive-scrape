@@ -7,7 +7,7 @@ import {ParsedField} from "../parsing/ParsedField";
 
 interface ScrapedDataPreviewComponentProps {
     sx: SxProps<Theme>,
-    previewData: ParsedDataPreview
+    previewData: ParsedDataPreview[]
 }
 
 interface ScrapedDataPreviewComponentState {
@@ -45,7 +45,7 @@ export default class ScrapedDataPreviewComponent extends React.Component<Scraped
                 outline: "dashed black",
             }}>
                 <DataGrid
-                    rows={this.props.previewData.page.parsedFields.map(mapToDataRow)}
+                    rows={this.props.previewData[0].page.parsedFields.map(mapToDataRow)}
                     columns={columns}
                     autoPageSize={true}
                     rowsPerPageOptions={[8]}

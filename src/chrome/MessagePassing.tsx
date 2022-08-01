@@ -11,6 +11,7 @@ export interface Message {
 
 export interface ScrapeMessage extends Message {
     uid: string,
+    parentContextUid: string|null,
     templateName: string,
     parseFields: ParseFieldTarget[],
 }

@@ -16,7 +16,7 @@ import {
 import ChangeContextComponent from "./components/ChangeContextComponent";
 import SettingsComponent from "./components/SettingsComponent";
 import TemplateViewerComponent from "./components/TemplateViewerComponent";
-import {ParsingContext} from "./parsing/ParsingContext";
+import {ContextMap, ParsingContext} from "./parsing/ParsingContext";
 import {
     ParsingTemplate,
     ParsingTemplateMap,
@@ -27,24 +27,31 @@ import ScrapedDataPreviewComponent from "./components/ScrapedDataPreviewComponen
 import {ParsedDataPreview} from "./parsing/ParsedDataPreview";
 import { v4 as uuidv4 } from 'uuid';
 import {newLocalStorage, StorageInterface} from "./chrome/ChromeStorage";
-
-interface ScrapeMessageContext {
-    context: ParsingContext | null,
-    template: ParsingTemplate
-}
+import {ParseSettings} from "./parsing/ParseSettings";
 
 interface ExtensionPopupPageState {
-    currentContext: ParsingContext | null,
+    contexts: StorageInterface<ContextMap>
+    currentContext: StorageInterface<ParsingContext | null>,
 
     templates: StorageInterface<ParsingTemplateMap>,
     currentTemplate: StorageInterface<ParsingTemplate>,
 
-    scrapeMessageContexts: Map<string, ScrapeMessageContext>
+    previewingData: StorageInterface<ParsedDataPreview[] | null>,
 
-    previewingData: ParsedDataPreview | null,
+    parseSettings: StorageInterface<ParseSettings>,
+}
 
-    moveToContext: boolean,
-    previewScrape: boolean,
+function loadStateFromStorage(state: {[key: string] : any}, key: string, func: (state: any) => void) {
+    const constFunc = func;
+    const value = state[key];
+    if(value != null) {
+        // @ts-ignore because this isn't type safe, but we know it is being used on storage interfaces in state
+        value.load().then(value => {
+            constFunc({
+                [key]: value
+            })
+        });
+    }
 }
 
 export default class ExtensionPopupPage extends React.Component<any, ExtensionPopupPageState> {
@@ -52,79 +59,74 @@ export default class ExtensionPopupPage extends React.Component<any, ExtensionPo
   constructor(props: any) {
     super(props);
     this.state = {
+        contexts: newLocalStorage("contexts", {}),
         templates: newLocalStorage("templates", STREET_EASY_BUILDING_EXPLORER_TEMPLATE_MAP),
 
-        currentContext: null,
+        currentContext: newLocalStorage("currentContext", null),
         currentTemplate: newLocalStorage("currentTemplate", STREET_EASY_BUILDING_EXPLORER_TEMPLATE_MAP["Building"]),
 
-        scrapeMessageContexts: new Map<string, ScrapeMessageContext>(),
+        previewingData: newLocalStorage("previewingData", null),
 
-        previewingData: null,
-
-        moveToContext: true,
-        previewScrape: true,
+        parseSettings: newLocalStorage("parseSettings", {
+            previewData: true,
+            moveToContext: true
+        }),
     }
 
-    // Load all values from the local storage
-    this.state.currentTemplate.load().then(value => {
-        this.setState({
-            currentTemplate: value
-        })
-    });
-    this.state.templates.load().then(value => {
-        this.setState({
-            templates: value
-        })
-    })
+    const setState = this.setState.bind(this)
+
+    loadStateFromStorage(this.state, "contexts", setState);
+    loadStateFromStorage(this.state, "templates", setState);
+    loadStateFromStorage(this.state, "currentContext", setState);
+    loadStateFromStorage(this.state, "currentTemplate", setState);
+    loadStateFromStorage(this.state, "parseSettings", setState);
   }
 
   componentDidMount() {
-    chrome.runtime.onMessage.addListener(this.listenForParseResult);
+    //chrome.runtime.onMessage.addListener(this.listenForParseResult);
   }
 
-  saveParsedData = (page: ParsedPage, context: ParsingContext | null) => {
-
-      if(this.state.moveToContext) {
-          //TODO---Move to the new context
-
-          //TODO--Maybe also add to a list of recent contexts for viewing later
-      }
-  }
-
-  processParsedData = (page: ParsedPage, context: ParsingContext | null, template: ParsingTemplate) => {
-      if(this.state.previewScrape) {
-          this.setState({
-              previewingData: {
-                  page: page,
-                  context: context,
-              }
-          })
-      } else {
-          //No data previewing, so we just save the data right away
-          this.saveParsedData(page, context)
-      }
-  }
-
-  listenForParseResult = (request: ParseSucceededMessage, sender: chrome.runtime.MessageSender, responseFunc: (response: any) => void) => {
-    console.log("Popup received message:", request)
-    if(request.type === TYPE_PARSE_SUCCEEDED) {
-        const messageContext : ScrapeMessageContext|undefined = this.state.scrapeMessageContexts.get(request.uid);
-        if(messageContext) {
-            this.processParsedData(request.result, messageContext.context, messageContext.template)
-        }
-        this.state.scrapeMessageContexts.delete(request.uid);
-    }
-    responseFunc({});
-    return true;
-  }
+  // saveParsedData = (page: ParsedPage, context: ParsingContext | null) => {
+  //
+  //     if(this.state.moveToContext) {
+  //         //TODO---Move to the new context
+  //
+  //         //TODO--Maybe also add to a list of recent contexts for viewing later
+  //     }
+  // }
+  //
+  // processParsedData = (page: ParsedPage, context: ParsingContext | null, template: ParsingTemplate) => {
+  //     if(this.state.previewScrape) {
+  //         this.setState({
+  //             previewingData: {
+  //                 page: page,
+  //                 context: context,
+  //             }
+  //         })
+  //     } else {
+  //         //No data previewing, so we just save the data right away
+  //         this.saveParsedData(page, context)
+  //     }
+  // }
+  //
+  // listenForParseResult = (request: ParseSucceededMessage, sender: chrome.runtime.MessageSender, responseFunc: (response: any) => void) => {
+  //   console.log("Popup received message:", request)
+  //   if(request.type === TYPE_PARSE_SUCCEEDED) {
+  //       if(messageContext) {
+  //           this.processParsedData(request.result, messageContext.context, messageContext.template)
+  //       }
+  //       this.state.scrapeMessageContexts.delete(request.uid);
+  //   }
+  //   responseFunc({});
+  //   return true;
+  // }
 
   sendScrapeMessage = () => {
         const uid = uuidv4();
-        const messageContext : ScrapeMessageContext = {
-            context: this.state.currentContext,
-            template: this.state.currentTemplate.get()
+        const messageContext = {
+            template: this.state.currentTemplate.get(),
+            context: this.state.currentContext.get(),
         }
-        this.state.scrapeMessageContexts.set(uid, messageContext)
 
         chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
           if(tabs[0].id != null) {
@@ -136,6 +138,7 @@ export default class ExtensionPopupPage extends React.Component<any, ExtensionPo
               chrome.tabs.sendMessage<ScrapeMessage>(id, {
                   type: TYPE_SCRAPE,
                   uid: uid,
+                  parentContextUid: messageContext.context == null ? null : messageContext.context.uid,
                   templateName: messageContext.template.name,
                   parseFields: messageContext.template.parsableFields,
               });
@@ -145,7 +148,9 @@ export default class ExtensionPopupPage extends React.Component<any, ExtensionPo
   }
 
   render() {
-    return (
+    const previewData = this.state.previewingData;
+
+      return (
         <Box sx={{
           height: "100%",
           width: "100%",
@@ -167,13 +172,14 @@ export default class ExtensionPopupPage extends React.Component<any, ExtensionPo
               />
           }
 
-            {this.state.previewingData != null &&
+            {previewData != null &&
                 <ScrapedDataPreviewComponent
                     sx={{
                         position: "absolute",
                         ...CHANGE_CONTEXT_POSITION,
                     }}
-                    previewData={this.state.previewingData}
+                    // @ts-ignore because we check for not null in the TSX block right above
+                    previewData={previewData}
                 />
             }
           <SettingsComponent
