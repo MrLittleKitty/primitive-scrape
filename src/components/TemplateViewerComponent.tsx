@@ -1,7 +1,7 @@
 import React from "react";
 import {Box, MenuItem, OutlinedInput, Select, SelectChangeEvent, SxProps, Theme, Typography} from "@mui/material";
 import {SEPARATION, TEMPLATE_DIMENSIONS} from "./PositionsAndDimensions";
-import {ParsingTemplate} from "../parsing/ParsingTemplate";
+import {ParsingTemplate, ParsingTemplateMap} from "../parsing/ParsingTemplate";
 
 const MenuProps = {
     PaperProps: {
@@ -36,7 +36,8 @@ function mapToMenuItem(template: ParsingTemplate) {
 interface TemplateViewerComponentProps {
     sx: SxProps<Theme>,
     currentTemplate: ParsingTemplate,
-    templates: ParsingTemplate[],
+    templates: ParsingTemplateMap,
+
     templateChangedFunc: (selectedTemplate: ParsingTemplate) => void
 }
 
@@ -53,8 +54,7 @@ export default class TemplateViewerComponent extends React.Component<TemplateVie
     handleTemplateChange = (event: SelectChangeEvent<string>) => {
         const selectedTemplateName = event.target.value;
         if(selectedTemplateName !== this.props.currentTemplate.name) {
-            const templatesToSearch = this.props.templates;
-            const value = templatesToSearch.find((value) => value.name === selectedTemplateName)
+            const value = this.props.templates[selectedTemplateName]
             if(value) {
                 this.props.templateChangedFunc(value);
             }
@@ -69,7 +69,7 @@ export default class TemplateViewerComponent extends React.Component<TemplateVie
     // }
 
     render() {
-        const templates = this.props.templates;
+        const viewableTemplates = this.props.templates; //TODO---Maybe the viewer should show only templates that fit in the current context (otherwise changing to a template might change the context)
         return (
             <Box sx={{
                 ...this.props.sx,
@@ -103,7 +103,7 @@ export default class TemplateViewerComponent extends React.Component<TemplateVie
                     input={<OutlinedInput label="Template" />}
                     MenuProps={MenuProps}
                 >
-                    {templates.map(mapToMenuItem)}
+                    {Object.values(viewableTemplates).map(mapToMenuItem)}
                 </Select>
             </Box>
         )

@@ -1,10 +1,8 @@
 import React from 'react';
 import {
-  ParseMessage,
-  ParseResponse,
   ParseSucceededMessage,
   ScrapeMessage,
-  TYPE_PARSE, TYPE_PARSE_SUCCEEDED,
+  TYPE_PARSE_SUCCEEDED,
   TYPE_SCRAPE
 } from "./chrome/MessagePassing";
 import {Box, Button} from "@mui/material";
@@ -19,7 +17,11 @@ import ChangeContextComponent from "./components/ChangeContextComponent";
 import SettingsComponent from "./components/SettingsComponent";
 import TemplateViewerComponent from "./components/TemplateViewerComponent";
 import {ParsingContext} from "./parsing/ParsingContext";
-import {ParsingTemplate, STREET_EASY_BUILDING_EXPLORER_TEMPLATES} from "./parsing/ParsingTemplate";
+import {
+    ParsingTemplate,
+    ParsingTemplateMap,
+    STREET_EASY_BUILDING_EXPLORER_TEMPLATE_MAP
+} from "./parsing/ParsingTemplate";
 import {ParsedPage} from "./parsing/ParsedPage";
 import ScrapedDataPreviewComponent from "./components/ScrapedDataPreviewComponent";
 import {ParsedDataPreview} from "./parsing/ParsedDataPreview";
@@ -34,7 +36,7 @@ interface ScrapeMessageContext {
 interface ExtensionPopupPageState {
     currentContext: ParsingContext | null,
 
-    templates: ParsingTemplate[],
+    templates: StorageInterface<ParsingTemplateMap>,
     currentTemplate: StorageInterface<ParsingTemplate>,
 
     scrapeMessageContexts: Map<string, ScrapeMessageContext>
@@ -50,10 +52,10 @@ export default class ExtensionPopupPage extends React.Component<any, ExtensionPo
   constructor(props: any) {
     super(props);
     this.state = {
-        templates: STREET_EASY_BUILDING_EXPLORER_TEMPLATES,
+        templates: newLocalStorage("templates", STREET_EASY_BUILDING_EXPLORER_TEMPLATE_MAP),
 
         currentContext: null,
-        currentTemplate: newLocalStorage("currentTemplate", STREET_EASY_BUILDING_EXPLORER_TEMPLATES[0]),
+        currentTemplate: newLocalStorage("currentTemplate", STREET_EASY_BUILDING_EXPLORER_TEMPLATE_MAP["Building"]),
 
         scrapeMessageContexts: new Map<string, ScrapeMessageContext>(),
 
@@ -62,9 +64,18 @@ export default class ExtensionPopupPage extends React.Component<any, ExtensionPo
         moveToContext: true,
         previewScrape: true,
     }
+
+    // Load all values from the local storage
     this.state.currentTemplate.load().then(value => {
-        this.forceUpdate();
+        this.setState({
+            currentTemplate: value
+        })
     });
+    this.state.templates.load().then(value => {
+        this.setState({
+            templates: value
+        })
+    })
   }
 
   componentDidMount() {
@@ -178,7 +189,7 @@ export default class ExtensionPopupPage extends React.Component<any, ExtensionPo
                 ...TEMPLATE_POSITION,
             }}
             currentTemplate={this.state.currentTemplate.get()}
-            templates={this.state.templates}
+            templates={this.state.templates.get()}
             templateChangedFunc={(template) => {
                 this.setState(oldState => {
                     return {

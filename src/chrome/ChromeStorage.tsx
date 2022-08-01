@@ -1,6 +1,6 @@
 export interface StorageInterface<T> {
     get() : T,
-    load(): Promise<T>,
+    load(): Promise<StorageInterface<T>>,
     set(value: T) : Promise<void>,
     update(value: T) : StorageInterface<T>
 }
@@ -21,12 +21,18 @@ class ChromeStorage<T> implements StorageInterface<T> {
         this.value = defaultValue;
     }
 
-    async load(): Promise<T> {
+    async load(): Promise<StorageInterface<T>> {
         // @ts-ignore
         const json = await chrome.storage.local.get([this.name])
         console.log("Loading from storage:", json);
-        this.value = json[this.name];
-        return this.value
+        const tempValue = json[this.name];
+        if(tempValue != null) {
+            this.value = tempValue;
+        } else {
+            console.log("Loaded nothing from storage", this.name)
+            await this.set(this.defaultValue);
+        }
+        return this;
     }
 
     get(): T {

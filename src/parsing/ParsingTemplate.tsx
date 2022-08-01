@@ -10,6 +10,10 @@ export interface ParsingTemplate {
     fieldToExtractContextNameFrom: string,
 }
 
+export type ParsingTemplateMap = {
+    [key: string] : ParsingTemplate
+}
+
 let UNIT_REF_TEMPLATE : ParsingTemplate = {
     parentTemplateKey: "Unit",
     childTemplatesKey: [],
@@ -58,4 +62,9 @@ let TEST_TEMPLATE : ParsingTemplate = {
     fieldToExtractContextNameFrom: "Name"
 }
 
-export const STREET_EASY_BUILDING_EXPLORER_TEMPLATES : ParsingTemplate[] = [BUILDING_TEMPLATE, UNIT_TEMPLATE, UNIT_REF_TEMPLATE, TEST_TEMPLATE]
+export const STREET_EASY_BUILDING_EXPLORER_TEMPLATE_MAP : ParsingTemplateMap = {
+    [BUILDING_TEMPLATE.name] : BUILDING_TEMPLATE,
+    [UNIT_TEMPLATE.name] : UNIT_TEMPLATE,
+    [UNIT_REF_TEMPLATE.name] : UNIT_REF_TEMPLATE,
+    //[TEST_TEMPLATE.name] : TEST_TEMPLATE,
+}
