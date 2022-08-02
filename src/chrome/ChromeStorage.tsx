@@ -5,20 +5,22 @@ export interface StorageInterface<T> {
     update(value: T) : StorageInterface<T>
 }
 
-export function newLocalStorage<T>(name: string, defaultValue: T) : StorageInterface<T> {
-    return new ChromeStorage<T>(name, defaultValue);
+export function newLocalStorage<T>(name: string, defaultValue: T,  useDefaultFunc: ((loadedValue: any) => boolean) = (value) => value == null) : StorageInterface<T> {
+    return new ChromeStorage<T>(name, defaultValue, useDefaultFunc);
 }
 
 class ChromeStorage<T> implements StorageInterface<T> {
     readonly name: string;
     readonly defaultValue: T;
 
+    useDefaultFunc: ((loadedValue: any) => boolean);
     value: T;
 
-    constructor(name: string, defaultValue: T) {
+    constructor(name: string, defaultValue: T, useDefaultFunc: ((loadedValue: any) => boolean)) {
         this.name = name;
         this.defaultValue = defaultValue;
         this.value = defaultValue;
+        this.useDefaultFunc = useDefaultFunc;
     }
 
     async load(): Promise<StorageInterface<T>> {
@@ -26,11 +28,11 @@ class ChromeStorage<T> implements StorageInterface<T> {
         const json = await chrome.storage.local.get([this.name])
         console.log("Loading from storage:", json);
         const tempValue = json[this.name];
-        if(tempValue != null) {
-            this.value = tempValue;
-        } else {
+        if(this.useDefaultFunc(tempValue)) {
             console.log("Loaded nothing from storage", this.name)
             await this.set(this.defaultValue);
+        } else {
+            this.value = tempValue;
         }
         return this;
     }

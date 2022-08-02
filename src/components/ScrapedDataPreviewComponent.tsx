@@ -7,11 +7,13 @@ import {ParsedField} from "../parsing/ParsedField";
 
 interface ScrapedDataPreviewComponentProps {
     sx: SxProps<Theme>,
-    previewData: ParsedDataPreview[]
+    previewData: ParsedDataPreview,
+
+    getDataCallback: (func: () => ParsedDataPreview) => void
 }
 
 interface ScrapedDataPreviewComponentState {
-
+    data: ParsedDataPreview
 }
 
 interface DataRow {
@@ -35,6 +37,17 @@ export default class ScrapedDataPreviewComponent extends React.Component<Scraped
 
     constructor(props: ScrapedDataPreviewComponentProps) {
         super(props);
+        this.state = {
+            data: props.previewData
+        }
+    }
+
+    componentDidMount() {
+        this.props.getDataCallback(this.getData);
+    }
+
+    getData = () : ParsedDataPreview => {
+        return this.state.data
     }
 
     render() {
@@ -44,12 +57,12 @@ export default class ScrapedDataPreviewComponent extends React.Component<Scraped
                 ...CHANGE_CONTEXT_DIMENSIONS,
                 outline: "dashed black",
             }}>
-                <DataGrid
-                    rows={this.props.previewData[0].page.parsedFields.map(mapToDataRow)}
-                    columns={columns}
-                    autoPageSize={true}
-                    rowsPerPageOptions={[8]}
-                />
+                {/*<DataGrid*/}
+                {/*    rows={this.props.previewData[0].page.parsedFields.map(mapToDataRow)}*/}
+                {/*    columns={columns}*/}
+                {/*    autoPageSize={true}*/}
+                {/*    rowsPerPageOptions={[8]}*/}
+                {/*/>*/}
             </Box>
         )
     }

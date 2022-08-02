@@ -36,7 +36,8 @@ interface ExtensionPopupPageState {
     templates: StorageInterface<ParsingTemplateMap>,
     currentTemplate: StorageInterface<ParsingTemplate>,
 
-    previewingData: StorageInterface<ParsedDataPreview[] | null>,
+    previewingData: StorageInterface<ParsedDataPreview[]>,
+    getPreviewDataFunc: (() => ParsedDataPreview)|null,
 
     parseSettings: StorageInterface<ParseSettings>,
 }
@@ -54,18 +55,87 @@ function loadStateFromStorage(state: {[key: string] : any}, key: string, func: (
     }
 }
 
+const FAKE_CONTEXTS : ContextMap = {
+    "1": {
+        parentContextUid: null,
+        childContextsUids: ["2"],
+
+        uid: "1",
+        name: "Monique",
+
+        page: {
+            url: "Test1",
+            parsedFields: [],
+        },
+        templateName: "Building"
+    },
+    "2": {
+        parentContextUid: "1",
+        childContextsUids: ["3"],
+
+        uid: "2",
+        name: "#301",
+
+        page: {
+            url: "Test2",
+            parsedFields: [],
+        },
+        templateName: "Unit"
+    },
+    "3": {
+        parentContextUid: "2",
+        childContextsUids: [],
+
+        uid: "3",
+        name: "Urban Living",
+
+        page: {
+            url: "Test3",
+            parsedFields: [],
+        },
+        templateName: "Reference"
+    },
+    "4": {
+        parentContextUid: null,
+        childContextsUids: ["5"],
+
+        uid: "4",
+        name: "Trace",
+
+        page: {
+            url: "Test4",
+            parsedFields: [],
+        },
+        templateName: "Building"
+    },
+    "5": {
+        parentContextUid: "4",
+        childContextsUids: [],
+
+        uid: "5",
+        name: "#302",
+
+        page: {
+            url: "Test5",
+            parsedFields: [],
+        },
+        templateName: "Unit"
+    },
+}
+
 export default class ExtensionPopupPage extends React.Component<any, ExtensionPopupPageState> {
 
   constructor(props: any) {
     super(props);
     this.state = {
-        contexts: newLocalStorage("contexts", {}),
-        templates: newLocalStorage("templates", STREET_EASY_BUILDING_EXPLORER_TEMPLATE_MAP),
+        contexts: newLocalStorage("contexts", FAKE_CONTEXTS, (value) => (value == null || Object.keys(value).length < 1)),
+        templates: newLocalStorage("templates", STREET_EASY_BUILDING_EXPLORER_TEMPLATE_MAP, (value) => (value == null || Object.keys(value).length < 1)),
 
         currentContext: newLocalStorage("currentContext", null),
-        currentTemplate: newLocalStorage("currentTemplate", STREET_EASY_BUILDING_EXPLORER_TEMPLATE_MAP["Building"]),
+        currentTemplate: newLocalStorage("currentTemplate", STREET_EASY_BUILDING_EXPLORER_TEMPLATE_MAP["Building"], (value) => (value == null || Object.keys(value).length < 1)),
 
-        previewingData: newLocalStorage("previewingData", null),
+        previewingData: newLocalStorage("previewingData", [], (value) => (value == null || value.length < 1)),
+        getPreviewDataFunc: null,
 
         parseSettings: newLocalStorage("parseSettings", {
             previewData: true,
@@ -122,33 +192,48 @@ export default class ExtensionPopupPage extends React.Component<any, ExtensionPo
   // }
 
   sendScrapeMessage = () => {
-        const uid = uuidv4();
-        const messageContext = {
-            template: this.state.currentTemplate.get(),
-            context: this.state.currentContext.get(),
-        }
+    const uid = uuidv4();
+    const messageContext = {
+        template: this.state.currentTemplate.get(),
+        context: this.state.currentContext.get(),
+    }
 
-        chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
-          if(tabs[0].id != null) {
-            const id = tabs[0].id;
-            chrome.scripting.executeScript({
-              target: {tabId: id, allFrames: false},
-              files: ['content.js'],
-            }, (results) => {
-              chrome.tabs.sendMessage<ScrapeMessage>(id, {
-                  type: TYPE_SCRAPE,
-                  uid: uid,
-                  parentContextUid: messageContext.context == null ? null : messageContext.context.uid,
-                  templateName: messageContext.template.name,
-                  parseFields: messageContext.template.parsableFields,
-              });
-            });
-          }
+    chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
+      if(tabs[0].id != null) {
+        const id = tabs[0].id;
+        chrome.scripting.executeScript({
+          target: {tabId: id, allFrames: false},
+          files: ['content.js'],
+        }, (results) => {
+          chrome.tabs.sendMessage<ScrapeMessage>(id, {
+              type: TYPE_SCRAPE,
+              uid: uid,
+              parentContextUid: messageContext.context == null ? null : messageContext.context.uid,
+              templateName: messageContext.template.name,
+              parseFields: messageContext.template.parsableFields,
+          });
         });
+      }
+    });
+  }
+
+  savePreviewedData = () => {
+      let previewingData = this.state.previewingData.get();
+      if(previewingData.length < 1) {
+          // Somehow there isn't any data in the array
+          return;
+      }
+      //TODO--Send a message to the background func to actually save the data
+
+      // Remove the value that we saved and then write it back to storage
+      previewingData = previewingData.splice(0, 1)
+      this.setState({
+          previewingData: this.state.previewingData.update(previewingData)
+      })
   }
 
   render() {
-    const previewData = this.state.previewingData;
+    const previewData = this.state.previewingData.get();
 
       return (
         <Box sx={{
@@ -163,23 +248,29 @@ export default class ExtensionPopupPage extends React.Component<any, ExtensionPo
               }}
           />
 
-          {this.state.previewingData == null &&
+          {previewData.length < 1 &&
               <ChangeContextComponent
                 sx={{
                     position: "absolute",
                     ...CHANGE_CONTEXT_POSITION,
                 }}
+                currentContext={this.state.currentContext.get()}
+                contexts={this.state.contexts.get()}
               />
           }
 
-            {previewData != null &&
+            {previewData.length > 0 &&
                 <ScrapedDataPreviewComponent
                     sx={{
                         position: "absolute",
                         ...CHANGE_CONTEXT_POSITION,
                     }}
-                    // @ts-ignore because we check for not null in the TSX block right above
-                    previewData={previewData}
+                    previewData={previewData[0]}
+                    getDataCallback={(func) => {
+                        this.setState({
+                            getPreviewDataFunc: func
+                        })
+                    }}
                 />
             }
           <SettingsComponent
@@ -211,8 +302,8 @@ export default class ExtensionPopupPage extends React.Component<any, ExtensionPo
                 ...MAIN_BUTTON_POSITION,
               }}
               variant="contained"
-              onClick={this.sendScrapeMessage}>
-            Scrape this page
+              onClick={previewData.length > 0 ? this.savePreviewedData : this.sendScrapeMessage}>
+              {previewData.length > 0 ? "Save Data" : "Scrape this page"}
           </Button>
         </Box>
     );
