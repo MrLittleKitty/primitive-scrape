@@ -131,7 +131,7 @@ export default class ExtensionPopupPage extends React.Component<any, ExtensionPo
         contexts: newLocalStorage("contexts", FAKE_CONTEXTS, (value) => (value == null || Object.keys(value).length < 1)),
         templates: newLocalStorage("templates", STREET_EASY_BUILDING_EXPLORER_TEMPLATE_MAP, (value) => (value == null || Object.keys(value).length < 1)),
 
-        currentContext: newLocalStorage("currentContext", null),
+        currentContext: newLocalStorage("currentContext", FAKE_CONTEXTS["3"]),
         currentTemplate: newLocalStorage("currentTemplate", STREET_EASY_BUILDING_EXPLORER_TEMPLATE_MAP["Building"], (value) => (value == null || Object.keys(value).length < 1)),
 
         previewingData: newLocalStorage("previewingData", [], (value) => (value == null || value.length < 1)),
@@ -246,6 +246,8 @@ export default class ExtensionPopupPage extends React.Component<any, ExtensionPo
                 position: "absolute",
                 ...CURRENT_CONTEXT_VIEWER_POSITION,
               }}
+              currentContext={this.state.currentContext.get()}
+              contexts={this.state.contexts.get()}
           />
 
           {previewData.length < 1 &&

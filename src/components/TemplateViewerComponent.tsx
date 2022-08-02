@@ -1,6 +1,6 @@
 import React from "react";
 import {Box, MenuItem, OutlinedInput, Select, SelectChangeEvent, SxProps, Theme, Typography} from "@mui/material";
-import {SEPARATION, TEMPLATE_DIMENSIONS} from "./PositionsAndDimensions";
+import {HEADER_HEIGHT, SEPARATION, TEMPLATE_DIMENSIONS} from "./PositionsAndDimensions";
 import {ParsingTemplate, ParsingTemplateMap} from "../parsing/ParsingTemplate";
 
 const MenuProps = {
@@ -78,7 +78,7 @@ export default class TemplateViewerComponent extends React.Component<TemplateVie
             }}>
                 <Box sx={{
                     width: TEMPLATE_DIMENSIONS.width,
-                    height: (TEMPLATE_DIMENSIONS.height/2) - SEPARATION,
+                    height: HEADER_HEIGHT,
                     flex: 1,
                     display: "flex",
                     textAlign: "center",
@@ -94,7 +94,7 @@ export default class TemplateViewerComponent extends React.Component<TemplateVie
                 <Select
                     sx={{
                         width: TEMPLATE_DIMENSIONS.width,
-                        height: TEMPLATE_DIMENSIONS.height/2
+                        height: TEMPLATE_DIMENSIONS.height-HEADER_HEIGHT,
                     }}
                     labelId="template-selector-label"
                     id="template-selector"

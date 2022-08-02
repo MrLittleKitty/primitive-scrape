@@ -1,6 +1,6 @@
 import React from "react";
 import {ParsingContext} from "../parsing/ParsingContext";
-import {SxProps, Theme} from "@mui/material";
+import {Box, Paper, SxProps, Theme, Typography} from "@mui/material";
 
 interface ContextBlockComponentProps {
     sx: SxProps<Theme>
@@ -19,8 +19,26 @@ export default class ContextBlockComponent extends React.Component<ContextBlockC
 
     render() {
         return (
-            <>
-            </>
+            <Paper
+                elevation={5}
+                sx={{
+                    ...this.props.sx
+                }}
+            >
+                <Box sx={{
+                    flex: 1,
+                    display: "flex",
+                    textAlign: "center",
+                    justifyContent: "center",
+                    alignItems: "center",
+                    padding: "8px"
+                }}>
+                    <Typography
+                        align={"center"}>
+                        {this.props.context.name}
+                    </Typography>
+                </Box>
+            </Paper>
         )
     }
 }

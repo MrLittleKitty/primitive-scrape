@@ -1,7 +1,8 @@
 import React from "react";
-import {Box, Paper, Stack, SxProps, Theme, Typography} from "@mui/material";
-import {CHANGE_CONTEXT_DIMENSIONS, SEPARATION, TEMPLATE_DIMENSIONS} from "./PositionsAndDimensions";
+import {Box, Stack, SxProps, Theme, Typography} from "@mui/material";
+import {CHANGE_CONTEXT_DIMENSIONS, CURRENT_CONTEXT_VIEWER_DIMENSIONS, HEADER_HEIGHT} from "./PositionsAndDimensions";
 import {ContextMap, ParsingContext} from "../parsing/ParsingContext";
+import ContextBlockComponent from "./ContextBlockComponent";
 
 interface ChangeContextComponentProps {
     sx: SxProps<Theme>
@@ -21,27 +22,13 @@ export default class ChangeContextComponent extends React.Component<ChangeContex
 
     createContextItem = (context: ParsingContext, index: number) => {
         return (
-            <Paper
-                elevation={5}
+            <ContextBlockComponent
                 sx={{
                     marginBottom: "8px",
                     marginLeft: index === 0 ? "0" : "16px",
                 }}
-            >
-                <Box sx={{
-                    flex: 1,
-                    display: "flex",
-                    textAlign: "center",
-                    justifyContent: "center",
-                    alignItems: "center",
-                    padding: "8px"
-                }}>
-                    <Typography
-                        align={"center"}>
-                        {context.name}
-                    </Typography>
-                </Box>
-            </Paper>
+                context={context}
+            />
         )
     }
 
@@ -52,6 +39,21 @@ export default class ChangeContextComponent extends React.Component<ChangeContex
                 ...CHANGE_CONTEXT_DIMENSIONS,
                 outline: "dashed black",
             }}>
+                <Box sx={{
+                    width: CHANGE_CONTEXT_DIMENSIONS.width,
+                    height: HEADER_HEIGHT,
+                    flex: 1,
+                    display: "flex",
+                    textAlign: "center",
+                    justifyContent: "center",
+                    alignItems: "center"
+                }}>
+                    <Typography
+                        variant={"h6"}
+                        align={"center"}>
+                        Change Current Context
+                    </Typography>
+                </Box>
                 <Stack
                     direction={"row"}
                     sx={{

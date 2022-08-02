@@ -1,8 +1,10 @@
 const PADDING = 5
 export const SEPARATION = 10
+export const HEADER_HEIGHT = 40;
 
 const USABLE_WIDTH = 800 - (PADDING*2);
 const USABLE_HEIGHT = 600 - (PADDING*2)
+
 
 const TOP_SEPARATION = {
     top: PADDING

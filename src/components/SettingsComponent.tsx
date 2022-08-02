@@ -1,6 +1,6 @@
 import React from "react";
-import {Box, SxProps, Theme} from "@mui/material";
-import {SETTINGS_DIMENSIONS} from "./PositionsAndDimensions";
+import {Box, SxProps, Theme, Typography} from "@mui/material";
+import {CHANGE_CONTEXT_DIMENSIONS, HEADER_HEIGHT, SETTINGS_DIMENSIONS} from "./PositionsAndDimensions";
 
 interface SettingsComponentProps {
     sx: SxProps<Theme>
@@ -23,7 +23,23 @@ export default class SettingsComponent extends React.Component<SettingsComponent
                 ...SETTINGS_DIMENSIONS,
                 outline: "dashed black",
             }}>
-                Settings
+                <Box sx={{
+                    width: SETTINGS_DIMENSIONS.width,
+                    height: HEADER_HEIGHT,
+                    flex: 1,
+                    display: "flex",
+                    textAlign: "center",
+                    justifyContent: "center",
+                    alignItems: "center"
+                }}>
+                    <Typography
+                        variant={"h6"}
+                        align={"center"}>
+                        Settings
+                    </Typography>
+                </Box>
+
+
             </Box>
         )
     }
