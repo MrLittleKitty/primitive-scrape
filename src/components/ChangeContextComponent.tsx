@@ -38,7 +38,7 @@ export default class ChangeContextComponent extends React.Component<ChangeContex
             <Box sx={{
                 ...this.props.sx,
                 ...CHANGE_CONTEXT_DIMENSIONS,
-                outline: "dashed black",
+                backgroundColor: "white",
             }}>
                 <Box sx={{
                     width: CHANGE_CONTEXT_DIMENSIONS.width,
@@ -55,15 +55,22 @@ export default class ChangeContextComponent extends React.Component<ChangeContex
                         Change Current Context
                     </Typography>
                 </Box>
-                <Stack
-                    direction={"row"}
-                    sx={{
-                        flexWrap: "wrap",
-                        margin: "8px",
-                    }}
-                >
-                    {Object.values(this.props.contexts).filter(value => this.props.currentContext == null || value.uid !== this.props.currentContext.uid).map(this.createContextItem)}
-                </Stack>
+                <Box sx={{
+                    display: "flex",
+                    alignItems: "center"
+                }}>
+                    <Stack
+                        direction={"row"}
+                        sx={{
+                            flexWrap: "wrap",
+                            flex: 1,
+                            alignItems: "center",
+                            justifyContent: "center",
+                        }}
+                    >
+                        {Object.values(this.props.contexts).filter(value => this.props.currentContext == null || value.uid !== this.props.currentContext.uid).map(this.createContextItem)}
+                    </Stack>
+                </Box>
             </Box>
         )
     }

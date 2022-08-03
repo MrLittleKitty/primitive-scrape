@@ -15,6 +15,10 @@ export interface Dimensions {
     height: number
 }
 
+export const CHANGE_CONTEXT_DIMENSIONS : Dimensions = {
+    height: 450,
+    width: 450
+}
 
 export const CURRENT_CONTEXT_VIEWER_POSITION = {
     ...TOP_SEPARATION,
@@ -22,8 +26,8 @@ export const CURRENT_CONTEXT_VIEWER_POSITION = {
 }
 
 export const CURRENT_CONTEXT_VIEWER_DIMENSIONS : Dimensions = {
-    height: 400,
-    width: 200
+    height: 450,
+    width: (USABLE_WIDTH-CHANGE_CONTEXT_DIMENSIONS.width - SEPARATION*2)/2
 }
 
 export const CHANGE_CONTEXT_POSITION= {
@@ -31,29 +35,24 @@ export const CHANGE_CONTEXT_POSITION= {
     left: CURRENT_CONTEXT_VIEWER_POSITION.left + CURRENT_CONTEXT_VIEWER_DIMENSIONS.width + SEPARATION
 }
 
-export const CHANGE_CONTEXT_DIMENSIONS : Dimensions = {
-    height: 450,
-    width: 450
-}
-
-export const SETTINGS_POSITION = {
-    ...TOP_SEPARATION,
-    left: CHANGE_CONTEXT_POSITION.left +CHANGE_CONTEXT_DIMENSIONS.width + SEPARATION
-}
-
 export const SETTINGS_DIMENSIONS : Dimensions = {
-    height: 500,
-    width: USABLE_WIDTH - SETTINGS_POSITION.left
-}
-
-export const TEMPLATE_POSITION = {
-    top: CURRENT_CONTEXT_VIEWER_POSITION.top + CURRENT_CONTEXT_VIEWER_DIMENSIONS.height + SEPARATION,
-    left: CURRENT_CONTEXT_VIEWER_POSITION.left
+    height: 350 - SEPARATION,
+    width: CURRENT_CONTEXT_VIEWER_DIMENSIONS.width
 }
 
 export const TEMPLATE_DIMENSIONS : Dimensions = {
     height: 100,
     width: CURRENT_CONTEXT_VIEWER_DIMENSIONS.width
+}
+
+export const SETTINGS_POSITION = {
+    top: PADDING + TEMPLATE_DIMENSIONS.height + SEPARATION,
+    left: CHANGE_CONTEXT_POSITION.left + CHANGE_CONTEXT_DIMENSIONS.width + SEPARATION
+}
+
+export const TEMPLATE_POSITION = {
+    ...TOP_SEPARATION,
+    left: SETTINGS_POSITION.left
 }
 
 export const MAIN_BUTTON_POSITION = {

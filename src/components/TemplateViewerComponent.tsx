@@ -1,32 +1,21 @@
 import React from "react";
-import {Box, MenuItem, OutlinedInput, Select, SelectChangeEvent, SxProps, Theme, Typography} from "@mui/material";
-import {HEADER_HEIGHT, SEPARATION, TEMPLATE_DIMENSIONS} from "./PositionsAndDimensions";
+import {
+    Box,
+    MenuItem,
+    Select,
+    SelectChangeEvent,
+    SxProps,
+    Theme,
+    Typography
+} from "@mui/material";
+import {HEADER_HEIGHT, TEMPLATE_DIMENSIONS} from "./PositionsAndDimensions";
 import {ParsingTemplate, ParsingTemplateMap} from "../parsing/ParsingTemplate";
-
-const MenuProps = {
-    PaperProps: {
-        style: {
-            maxHeight: TEMPLATE_DIMENSIONS.height,
-            width: TEMPLATE_DIMENSIONS.width,
-        },
-    },
-};
-
-function getStyles(name: string, personName: string[], theme: Theme) {
-    return {
-        fontWeight:
-            personName.indexOf(name) === -1
-                ? theme.typography.fontWeightRegular
-                : theme.typography.fontWeightMedium,
-    };
-}
 
 function mapToMenuItem(template: ParsingTemplate) {
     return (
         <MenuItem
             key={template.name}
             value={template.name}
-            // style={getStyles(template.name, this.props.currentTemplate.name, theme)}
         >
             {template.name}
         </MenuItem>
@@ -60,25 +49,17 @@ export default class TemplateViewerComponent extends React.Component<TemplateVie
         }
     }
 
-    // concatAllTemplates = () : ParsingTemplate[] => {
-    //     if(this.props.currentTemplate.parentTemplateKey == null) {
-    //         return this.props.templates;
-    //     }
-    //     return [...this.props.templates, ...this.props.currentTemplate.parentTemplate.childTemplates.filter(temp => temp.name !== this.props.currentTemplate.name)]
-    // }
-
     render() {
         const viewableTemplates = this.props.templates; //TODO---Maybe the viewer should show only templates that fit in the current context (otherwise changing to a template might change the context)
         return (
             <Box sx={{
                 ...this.props.sx,
                 ...TEMPLATE_DIMENSIONS,
-                outline: "dashed black",
+                backgroundColor: "white",
             }}>
                 <Box sx={{
                     width: TEMPLATE_DIMENSIONS.width,
                     height: HEADER_HEIGHT,
-                    flex: 1,
                     display: "flex",
                     textAlign: "center",
                     justifyContent: "center",
@@ -99,8 +80,6 @@ export default class TemplateViewerComponent extends React.Component<TemplateVie
                     id="template-selector"
                     value={this.props.currentTemplate.name}
                     onChange={this.handleTemplateChange}
-                    input={<OutlinedInput label="Template" />}
-                    MenuProps={MenuProps}
                 >
                     {Object.values(viewableTemplates).map(mapToMenuItem)}
                 </Select>

@@ -53,7 +53,7 @@ export default class CurrentContextViewerComponent extends React.Component<Curre
             <Box sx={{
                 ...this.props.sx,
                 ...CURRENT_CONTEXT_VIEWER_DIMENSIONS,
-                outline: "dashed black",
+                backgroundColor: "white",
             }}>
                 <Box sx={{
                     width: CURRENT_CONTEXT_VIEWER_DIMENSIONS.width,

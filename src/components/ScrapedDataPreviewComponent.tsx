@@ -55,7 +55,7 @@ export default class ScrapedDataPreviewComponent extends React.Component<Scraped
             <Box sx={{
                 ...this.props.sx,
                 ...CHANGE_CONTEXT_DIMENSIONS,
-                outline: "dashed black",
+                backgroundColor: "white",
             }}>
                 {/*<DataGrid*/}
                 {/*    rows={this.props.previewData[0].page.parsedFields.map(mapToDataRow)}*/}

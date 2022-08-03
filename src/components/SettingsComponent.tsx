@@ -21,7 +21,7 @@ export default class SettingsComponent extends React.Component<SettingsComponent
             <Box sx={{
                 ...this.props.sx,
                 ...SETTINGS_DIMENSIONS,
-                outline: "dashed black",
+                backgroundColor: "white",
             }}>
                 <Box sx={{
                     width: SETTINGS_DIMENSIONS.width,
