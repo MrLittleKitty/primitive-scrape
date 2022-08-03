@@ -42,6 +42,7 @@ export default class CurrentContextViewerComponent extends React.Component<Curre
 
                 }}
                 context={context}
+                contextBlockClicked={(context) => {}}
             />
         )
     }

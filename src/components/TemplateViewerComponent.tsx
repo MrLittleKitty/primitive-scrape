@@ -42,7 +42,6 @@ interface TemplateViewerComponentProps {
 }
 
 interface TemplateViewerComponentState {
-    value: string
 }
 
 export default class TemplateViewerComponent extends React.Component<TemplateViewerComponentProps, TemplateViewerComponentState> {

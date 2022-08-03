@@ -28,6 +28,7 @@ export default class ChangeContextComponent extends React.Component<ChangeContex
                     marginLeft: index === 0 ? "0" : "16px",
                 }}
                 context={context}
+                contextBlockClicked={(context) => {}}
             />
         )
     }
