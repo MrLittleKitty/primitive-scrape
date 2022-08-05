@@ -25,7 +25,7 @@ export default class ChangeContextComponent extends React.Component<ChangeContex
             <ContextBlockComponent
                 sx={{
                     marginBottom: "8px",
-                    marginLeft: index === 0 ? "0" : "16px",
+                    marginLeft: index === 0 ? "0" : "8px",
                 }}
                 context={context}
                 contextBlockClicked={(context) => {}}
@@ -41,35 +41,39 @@ export default class ChangeContextComponent extends React.Component<ChangeContex
                 backgroundColor: "white",
             }}>
                 <Box sx={{
-                    width: CHANGE_CONTEXT_DIMENSIONS.width,
-                    height: HEADER_HEIGHT,
-                    flex: 1,
-                    display: "flex",
-                    textAlign: "center",
-                    justifyContent: "center",
-                    alignItems: "center"
+                    marginLeft: "10px",
+                    marginRight: "10px"
                 }}>
-                    <Typography
-                        variant={"h6"}
-                        align={"center"}>
-                        Change Current Context
-                    </Typography>
-                </Box>
-                <Box sx={{
-                    display: "flex",
-                    alignItems: "center"
-                }}>
-                    <Stack
-                        direction={"row"}
-                        sx={{
-                            flexWrap: "wrap",
-                            flex: 1,
-                            alignItems: "center",
-                            justifyContent: "center",
-                        }}
-                    >
-                        {Object.values(this.props.contexts).filter(value => this.props.currentContext == null || value.uid !== this.props.currentContext.uid).map(this.createContextItem)}
-                    </Stack>
+                    <Box sx={{
+                        width: CHANGE_CONTEXT_DIMENSIONS.width,
+                        height: HEADER_HEIGHT,
+                        flex: 1,
+                        display: "flex",
+                        textAlign: "center",
+                        alignItems: "center"
+                    }}>
+                        <Typography
+                            sx={{
+                                color: "#404040"
+                            }}
+                            align={"center"}>
+                            Change Current Context
+                        </Typography>
+                    </Box>
+                    <Box sx={{
+                        display: "flex",
+                        alignItems: "center"
+                    }}>
+                        <Stack
+                            direction={"row"}
+                            sx={{
+                                flexWrap: "wrap",
+                                flex: 1,
+                            }}
+                        >
+                            {Object.values(this.props.contexts).filter(value => this.props.currentContext == null || value.uid !== this.props.currentContext.uid).map(this.createContextItem)}
+                        </Stack>
+                    </Box>
                 </Box>
             </Box>
         )

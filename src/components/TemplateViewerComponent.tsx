@@ -17,7 +17,11 @@ function mapToMenuItem(template: ParsingTemplate) {
             key={template.name}
             value={template.name}
         >
-            {template.name}
+            <Typography sx={{
+                color: "#404040"
+            }}>
+                {template.name}
+            </Typography>
         </MenuItem>
     )
 }
@@ -62,11 +66,14 @@ export default class TemplateViewerComponent extends React.Component<TemplateVie
                     height: HEADER_HEIGHT,
                     display: "flex",
                     textAlign: "center",
-                    justifyContent: "center",
-                    alignItems: "center"
+                    alignItems: "center",
+                    marginLeft: "10px",
+                    marginRight: "10px"
                 }}>
                     <Typography
-                        variant={"h6"}
+                        sx={{
+                            color: "#404040"
+                        }}
                         align={"center"}>
                         Template
                     </Typography>

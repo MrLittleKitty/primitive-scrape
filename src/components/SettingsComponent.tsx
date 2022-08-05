@@ -24,21 +24,26 @@ export default class SettingsComponent extends React.Component<SettingsComponent
                 backgroundColor: "white",
             }}>
                 <Box sx={{
-                    width: SETTINGS_DIMENSIONS.width,
-                    height: HEADER_HEIGHT,
-                    flex: 1,
-                    display: "flex",
-                    textAlign: "center",
-                    justifyContent: "center",
-                    alignItems: "center"
+                    marginLeft: "10px",
+                    marginRight: "10px"
                 }}>
-                    <Typography
-                        variant={"h6"}
-                        align={"center"}>
-                        Settings
-                    </Typography>
+                    <Box sx={{
+                        width: SETTINGS_DIMENSIONS.width,
+                        height: HEADER_HEIGHT,
+                        flex: 1,
+                        display: "flex",
+                        textAlign: "center",
+                        alignItems: "center"
+                    }}>
+                        <Typography
+                            sx={{
+                                color: "#404040"
+                            }}
+                            align={"center"}>
+                            Settings
+                        </Typography>
+                    </Box>
                 </Box>
-
 
             </Box>
         )

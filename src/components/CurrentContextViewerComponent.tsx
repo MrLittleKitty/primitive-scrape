@@ -56,28 +56,31 @@ export default class CurrentContextViewerComponent extends React.Component<Curre
                 backgroundColor: "white",
             }}>
                 <Box sx={{
-                    width: CURRENT_CONTEXT_VIEWER_DIMENSIONS.width,
-                    height: HEADER_HEIGHT,
-                    flex: 1,
-                    display: "flex",
-                    textAlign: "center",
-                    justifyContent: "center",
-                    alignItems: "center"
+                    marginLeft: "10px",
+                    marginRight: "10px"
                 }}>
-                    <Typography
-                        variant={"h6"}
-                        align={"center"}>
-                        Current Context
-                    </Typography>
+                    <Box sx={{
+                        width: CURRENT_CONTEXT_VIEWER_DIMENSIONS.width,
+                        height: HEADER_HEIGHT,
+                        flex: 1,
+                        display: "flex",
+                        textAlign: "center",
+                        alignItems: "center"
+                    }}>
+                        <Typography
+                            sx={{
+                                color: "#404040"
+                            }}
+                            align={"center"}>
+                            Current Context
+                        </Typography>
+                    </Box>
+                    <Stack
+                        spacing={1}
+                    >
+                        {Object.values(contextTree).map(this.createContextTreeItem)}
+                    </Stack>
                 </Box>
-                <Stack
-                    spacing={2}
-                    sx={{
-                        margin: "8px",
-                    }}
-                >
-                    {Object.values(contextTree).map(this.createContextTreeItem)}
-                </Stack>
             </Box>
         )
     }

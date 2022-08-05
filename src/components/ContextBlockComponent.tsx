@@ -2,6 +2,7 @@ import React from "react";
 import {ParsingContext} from "../parsing/ParsingContext";
 import {Box, Button, Paper, SxProps, Theme, Typography} from "@mui/material";
 
+
 interface ContextBlockComponentProps {
     sx: SxProps<Theme>
     context: ParsingContext
@@ -22,9 +23,10 @@ export default class ContextBlockComponent extends React.Component<ContextBlockC
     render() {
         return (
             <Paper
-                elevation={3}
+                elevation={0}
                 sx={{
-                    ...this.props.sx
+                    ...this.props.sx,
+                    backgroundColor: "#ececec"
                 }}
             >
                 <Box sx={{
@@ -40,7 +42,11 @@ export default class ContextBlockComponent extends React.Component<ContextBlockC
                             minWidth: "100%",
                         }}
                         onClick={() => this.props.contextBlockClicked(this.props.context)}>
-                        {this.props.context.name}
+                        <Typography sx={{
+                            color: "#404040"
+                        }}>
+                            {this.props.context.name}
+                        </Typography>
                     </Button>
                 </Box>
             </Paper>

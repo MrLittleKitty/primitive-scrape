@@ -245,7 +245,7 @@ export default class ExtensionPopupPage extends React.Component<any, ExtensionPo
         <Box sx={{
           height: "100%",
           width: "100%",
-          backgroundColor: "#F5F5F5",
+          backgroundColor: "#F6F6F6",
         }}>
           <CurrentContextViewerComponent
               sx={{
@@ -308,7 +308,11 @@ export default class ExtensionPopupPage extends React.Component<any, ExtensionPo
               sx={{
                 position: "absolute",
                 ...MAIN_BUTTON_POSITION,
-                ...MAIN_BUTTON_DIMENSIONS
+                ...MAIN_BUTTON_DIMENSIONS,
+                  backgroundColor: "#40385a",
+                  '&:hover': {
+                      backgroundColor: "#524b6b"
+                  }
               }}
               variant="contained"
               onClick={previewData.length > 0 ? this.savePreviewedData : this.sendScrapeMessage}>
