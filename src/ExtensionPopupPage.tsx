@@ -9,7 +9,7 @@ import {Box, Button} from "@mui/material";
 import CurrentContextViewerComponent from "./components/CurrentContextViewerComponent";
 import {
     CHANGE_CONTEXT_POSITION,
-    CURRENT_CONTEXT_VIEWER_POSITION,
+    CURRENT_CONTEXT_VIEWER_POSITION, MAIN_BUTTON_DIMENSIONS,
     MAIN_BUTTON_POSITION,
     SETTINGS_POSITION, TEMPLATE_POSITION
 } from "./components/PositionsAndDimensions";
@@ -22,7 +22,6 @@ import {
     ParsingTemplateMap,
     STREET_EASY_BUILDING_EXPLORER_TEMPLATE_MAP
 } from "./parsing/ParsingTemplate";
-import {ParsedPage} from "./parsing/ParsedPage";
 import ScrapedDataPreviewComponent from "./components/ScrapedDataPreviewComponent";
 import {ParsedDataPreview} from "./parsing/ParsedDataPreview";
 import { v4 as uuidv4 } from 'uuid';
@@ -154,6 +153,13 @@ export default class ExtensionPopupPage extends React.Component<any, ExtensionPo
 
   componentDidMount() {
     //chrome.runtime.onMessage.addListener(this.listenForParseResult);
+
+      chrome.storage.onChanged.addListener((changes, area) => {
+          // Only listen to local storage changes where a new value is saved
+          if (area === 'local' && changes.previewingData?.newValue) {
+              //Listen to changes for previewingData
+          }
+      });
   }
 
   // saveParsedData = (page: ParsedPage, context: ParsingContext | null) => {
@@ -239,7 +245,7 @@ export default class ExtensionPopupPage extends React.Component<any, ExtensionPo
         <Box sx={{
           height: "100%",
           width: "100%",
-
+          backgroundColor: "#F5F5F5",
         }}>
           <CurrentContextViewerComponent
               sx={{
@@ -302,10 +308,11 @@ export default class ExtensionPopupPage extends React.Component<any, ExtensionPo
               sx={{
                 position: "absolute",
                 ...MAIN_BUTTON_POSITION,
+                ...MAIN_BUTTON_DIMENSIONS
               }}
               variant="contained"
               onClick={previewData.length > 0 ? this.savePreviewedData : this.sendScrapeMessage}>
-              {previewData.length > 0 ? "Save Data" : "Scrape this page"}
+              {previewData.length > 0 ? "Save Data" : "Scrape Page"}
           </Button>
         </Box>
     );
