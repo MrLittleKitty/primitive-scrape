@@ -9,5 +9,10 @@
   "permissions": ["storage", "activeTab", "scripting", "unlimitedStorage"],
   "background": {
     "service_worker": "worker.js"
+  },
+  "icons": {
+    "16": "Icon-16.png",
+    "48": "Icon-48.png",
+    "128": "Icon-128.png"
   }
 }
