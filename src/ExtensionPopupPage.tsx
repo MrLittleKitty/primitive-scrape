@@ -27,6 +27,7 @@ import {ParsedDataPreview} from "./parsing/ParsedDataPreview";
 import { v4 as uuidv4 } from 'uuid';
 import {newLocalStorage, StorageInterface} from "./chrome/ChromeStorage";
 import {ParseSettings} from "./parsing/ParseSettings";
+import PaperButton from "./components/PaperButton";
 
 interface ExtensionPopupPageState {
     contexts: StorageInterface<ContextMap>
@@ -304,20 +305,21 @@ export default class ExtensionPopupPage extends React.Component<any, ExtensionPo
             }}
           />
 
-          <Button
+          <PaperButton
               sx={{
-                position: "absolute",
-                ...MAIN_BUTTON_POSITION,
-                ...MAIN_BUTTON_DIMENSIONS,
-                  backgroundColor: "#40385a",
-                  '&:hover': {
-                      backgroundColor: "#524b6b"
-                  }
+                  position: "absolute",
+                  ...MAIN_BUTTON_POSITION,
+                  ...MAIN_BUTTON_DIMENSIONS,
               }}
-              variant="contained"
-              onClick={previewData.length > 0 ? this.savePreviewedData : this.sendScrapeMessage}>
+              hoverElevation={1}
+              color={"#40385a"}
+              hoverColor={"#524b6b"}
+              clickColor={"#40385a"}
+              textColor={"#f6f6f6"}
+              onClick={previewData.length > 0 ? this.savePreviewedData : this.sendScrapeMessage}
+          >
               {previewData.length > 0 ? "Save Data" : "Scrape Page"}
-          </Button>
+          </PaperButton>
         </Box>
     );
   }

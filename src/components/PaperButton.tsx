@@ -5,6 +5,7 @@ interface PaperButtonProps {
     sx: SxProps<Theme>
 
     hoverElevation: number,
+    hoverColor?: string,
 
     color: string,
     clickColor: string,
@@ -32,7 +33,7 @@ export default class PaperButton extends React.Component<PaperButtonPropsWithChi
     }
 
     isMouseOver = (isMouseOver: boolean) => {
-        const newBackgroundColor = isMouseOver ? this.state.backgroundColor : this.props.color
+        const newBackgroundColor = isMouseOver ? (this.props.hoverColor ? this.props.hoverColor : this.state.backgroundColor) : this.props.color
         this.setState({
             elevation: isMouseOver ? this.props.hoverElevation : 0,
             backgroundColor: newBackgroundColor
@@ -42,7 +43,7 @@ export default class PaperButton extends React.Component<PaperButtonPropsWithChi
     isMouseDown = (isMouseDown: boolean) => {
         const newElevation = isMouseDown ? 0 : this.props.hoverElevation;
         this.setState({
-            backgroundColor: isMouseDown ? this.props.clickColor : this.props.color,
+            backgroundColor: isMouseDown ? this.props.clickColor : (this.props.hoverColor ? this.props.hoverColor : this.props.color),
             elevation: newElevation
         })
     }
@@ -68,7 +69,7 @@ export default class PaperButton extends React.Component<PaperButtonPropsWithChi
                             flex: 1,
                             minWidth: "100%",
                             '&:hover': {
-                                backgroundColor: this.state.backgroundColor
+                                 backgroundColor: this.state.backgroundColor
                             }
                         }}
 
