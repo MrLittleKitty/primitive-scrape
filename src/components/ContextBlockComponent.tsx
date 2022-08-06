@@ -1,6 +1,7 @@
 import React from "react";
 import {ParsingContext} from "../parsing/ParsingContext";
 import {Box, Button, Paper, SxProps, Theme, Typography} from "@mui/material";
+import PaperButton from "./PaperButton";
 
 
 interface ContextBlockComponentProps {
@@ -43,43 +44,16 @@ export default class ContextBlockComponent extends React.Component<ContextBlockC
 
     render() {
         return (
-            <Paper
-                elevation={this.state.elevation}
-                sx={{
-                    ...this.props.sx,
-                    backgroundColor: this.state.backgroundColor
-                }}
+            <PaperButton
+                sx={this.props.sx}
+                hoverElevation={1}
+                color={"#ececec"}
+                clickColor={"#c9c9c9"}
+                textColor={"#404040"}
+                onClick={() => this.props.contextBlockClicked(this.props.context)}
             >
-                <Box sx={{
-                    flex: 1,
-                    display: "flex",
-                    textAlign: "center",
-                    justifyContent: "center",
-                    alignItems: "center",
-                }}>
-                    <Button
-                        sx={{
-                            flex: 1,
-                            minWidth: "100%",
-                            '&:hover': {
-                                backgroundColor: this.state.backgroundColor
-                            }
-                        }}
-                        disableRipple={true}
-                        disableFocusRipple={true}
-                        onMouseDown={() => this.isMouseDown(true)}
-                        onMouseUp={() => this.isMouseDown(false)}
-                        onClick={() => this.props.contextBlockClicked(this.props.context)}
-                        onMouseOver={() => this.isMouseOver(true)}
-                        onMouseOut={() => this.isMouseOver(false)}>
-                        <Typography sx={{
-                            color: "#404040"
-                        }}>
-                            {this.props.context.name}
-                        </Typography>
-                    </Button>
-                </Box>
-            </Paper>
+                {this.props.context.name}
+            </PaperButton>
         )
     }
 }
