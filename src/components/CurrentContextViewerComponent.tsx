@@ -26,7 +26,7 @@ export default class CurrentContextViewerComponent extends React.Component<Curre
         }
         let root = startingContext;
         let tree = [startingContext]
-        while(root.parentContextUid != null) {
+        while(root.parentContextUid != null) { //TODO---Maybe need to make sure root is never null as well?
             const parent = contextMap[root.parentContextUid]
             tree.push(parent)
             root = parent;

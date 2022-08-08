@@ -55,9 +55,13 @@ class LocalChromeStorage<T> implements StorageInterface<T>, ReadOnlyStorageInter
         const json = await chrome.storage.local.get([this.name])
         console.log("Loading from storage:", json);
         const tempValue = json[this.name];
-        if(this.saveDefault && this.useDefaultFunc(tempValue)) {
+        // Use the provided function to determine if this value is really considered "null" from storage
+        if(this.useDefaultFunc(tempValue)) {
             console.log("Loaded nothing from storage", this.name)
-            await this.set(this.defaultValue);
+            if(this.saveDefault) {
+                await this.set(this.defaultValue);
+            }
+
         } else {
             this.value = tempValue;
         }
