@@ -1,9 +1,14 @@
 import React from "react";
-import {Box, SxProps, Theme, Typography} from "@mui/material";
-import {CHANGE_CONTEXT_DIMENSIONS, HEADER_HEIGHT, SETTINGS_DIMENSIONS} from "./PositionsAndDimensions";
+import {Box, FormControlLabel, FormGroup, Switch, SxProps, Theme, Typography} from "@mui/material";
+import {HEADER_HEIGHT, SETTINGS_DIMENSIONS} from "./PositionsAndDimensions";
 
 interface SettingsComponentProps {
     sx: SxProps<Theme>
+    moveToContext: boolean,
+    previewData: boolean,
+
+    previewDataChanged: (value: boolean) => void
+    moveToContextChanged: (value: boolean) => void
 }
 
 interface SettingsComponentState {
@@ -43,8 +48,12 @@ export default class SettingsComponent extends React.Component<SettingsComponent
                             Settings
                         </Typography>
                     </Box>
-                </Box>
 
+                    <FormGroup>
+                        <FormControlLabel control={<Switch checked={this.props.previewData} onChange={(event) => this.props.previewDataChanged(event.target.checked)}/>} label="Preview Data" />
+                        <FormControlLabel control={<Switch checked={this.props.moveToContext} onChange={(event) => this.props.moveToContextChanged(event.target.checked)}/>} label="Move to Context" />
+                    </FormGroup>
+                </Box>
             </Box>
         )
     }

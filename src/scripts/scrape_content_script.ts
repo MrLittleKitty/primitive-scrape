@@ -1,4 +1,4 @@
-import {ParseMessage, ScrapeMessage, ScrapeResponse, TYPE_PARSE, TYPE_SCRAPE} from "./MessagePassing";
+import {ParseMessage, ScrapeMessage, ScrapeResponse, TYPE_PARSE, TYPE_SCRAPE} from "../chrome/MessagePassing";
 
 function scrapeBody(request: ScrapeMessage) {
     if(document.readyState === "complete") {
@@ -7,8 +7,9 @@ function scrapeBody(request: ScrapeMessage) {
             uid: request.uid,
             parentContextUid: request.parentContextUid,
             body: document.body.outerHTML,
-            templateName: request.templateName,
+            template: request.template,
             parseFields: request.parseFields,
+            settings: request.settings,
         })
     }
     else {

@@ -1,6 +1,5 @@
 import React from 'react';
 import {
-  ParseSucceededMessage,
   ScrapeMessage,
   TYPE_PARSE_SUCCEEDED,
   TYPE_SCRAPE
@@ -25,18 +24,23 @@ import {
 import ScrapedDataPreviewComponent from "./components/ScrapedDataPreviewComponent";
 import {ParsedDataPreview} from "./parsing/ParsedDataPreview";
 import { v4 as uuidv4 } from 'uuid';
-import {newLocalStorage, StorageInterface} from "./chrome/ChromeStorage";
+import {
+    newLocalStorage,
+    newReadOnlyLocalStorage,
+    ReadOnlyStorageInterface,
+    StorageInterface
+} from "./chrome/ChromeStorage";
 import {ParseSettings} from "./parsing/ParseSettings";
 import PaperButton from "./components/PaperButton";
 
 interface ExtensionPopupPageState {
-    contexts: StorageInterface<ContextMap>
-    currentContext: StorageInterface<ParsingContext | null>,
+    contexts: ReadOnlyStorageInterface<ContextMap>
+    currentContext: ReadOnlyStorageInterface<ParsingContext | null>,
 
     templates: StorageInterface<ParsingTemplateMap>,
     currentTemplate: StorageInterface<ParsingTemplate>,
 
-    previewingData: StorageInterface<ParsedDataPreview[]>,
+    previewingData: ReadOnlyStorageInterface<ParsedDataPreview[]>,
     getPreviewDataFunc: (() => ParsedDataPreview)|null,
 
     parseSettings: StorageInterface<ParseSettings>,
@@ -55,90 +59,22 @@ function loadStateFromStorage(state: {[key: string] : any}, key: string, func: (
     }
 }
 
-const FAKE_CONTEXTS : ContextMap = {
-    "1": {
-        parentContextUid: null,
-        childContextsUids: ["2"],
-
-        uid: "1",
-        name: "Monique",
-
-        page: {
-            url: "Test1",
-            parsedFields: [],
-        },
-        templateName: "Building"
-    },
-    "2": {
-        parentContextUid: "1",
-        childContextsUids: ["3"],
-
-        uid: "2",
-        name: "#301",
-
-        page: {
-            url: "Test2",
-            parsedFields: [],
-        },
-        templateName: "Unit"
-    },
-    "3": {
-        parentContextUid: "2",
-        childContextsUids: [],
-
-        uid: "3",
-        name: "Urban Living",
-
-        page: {
-            url: "Test3",
-            parsedFields: [],
-        },
-        templateName: "Reference"
-    },
-    "4": {
-        parentContextUid: null,
-        childContextsUids: ["5"],
-
-        uid: "4",
-        name: "Trace",
-
-        page: {
-            url: "Test4",
-            parsedFields: [],
-        },
-        templateName: "Building"
-    },
-    "5": {
-        parentContextUid: "4",
-        childContextsUids: [],
-
-        uid: "5",
-        name: "#302",
-
-        page: {
-            url: "Test5",
-            parsedFields: [],
-        },
-        templateName: "Unit"
-    },
-}
-
 export default class ExtensionPopupPage extends React.Component<any, ExtensionPopupPageState> {
 
   constructor(props: any) {
     super(props);
     this.state = {
-        contexts: newLocalStorage("contexts", FAKE_CONTEXTS, (value) => (value == null || Object.keys(value).length < 1)),
+        contexts: newReadOnlyLocalStorage("contexts", {}, (value) => (value == null || Object.keys(value).length < 1)),
         templates: newLocalStorage("templates", STREET_EASY_BUILDING_EXPLORER_TEMPLATE_MAP, (value) => (value == null || Object.keys(value).length < 1)),
 
-        currentContext: newLocalStorage("currentContext", FAKE_CONTEXTS["3"]),
+        currentContext: newReadOnlyLocalStorage("currentContext", null),
         currentTemplate: newLocalStorage("currentTemplate", STREET_EASY_BUILDING_EXPLORER_TEMPLATE_MAP["Building"], (value) => (value == null || Object.keys(value).length < 1)),
 
-        previewingData: newLocalStorage("previewingData", [], (value) => (value == null || value.length < 1)),
+        previewingData: newReadOnlyLocalStorage("previewingData", [], (value) => (value == null || value.length < 1)),
         getPreviewDataFunc: null,
 
         parseSettings: newLocalStorage("parseSettings", {
-            previewData: true,
+            previewData: false,
             moveToContext: true
         }),
     }
@@ -146,21 +82,13 @@ export default class ExtensionPopupPage extends React.Component<any, ExtensionPo
     const setState = this.setState.bind(this)
 
     loadStateFromStorage(this.state, "contexts", setState);
+
     loadStateFromStorage(this.state, "templates", setState);
     loadStateFromStorage(this.state, "currentContext", setState);
     loadStateFromStorage(this.state, "currentTemplate", setState);
     loadStateFromStorage(this.state, "parseSettings", setState);
-  }
 
-  componentDidMount() {
-    //chrome.runtime.onMessage.addListener(this.listenForParseResult);
 
-      chrome.storage.onChanged.addListener((changes, area) => {
-          // Only listen to local storage changes where a new value is saved
-          if (area === 'local' && changes.previewingData?.newValue) {
-              //Listen to changes for previewingData
-          }
-      });
   }
 
   // saveParsedData = (page: ParsedPage, context: ParsingContext | null) => {
@@ -203,6 +131,7 @@ export default class ExtensionPopupPage extends React.Component<any, ExtensionPo
     const messageContext = {
         template: this.state.currentTemplate.get(),
         context: this.state.currentContext.get(),
+        settings: this.state.parseSettings.get(),
     }
 
     chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
@@ -216,8 +145,9 @@ export default class ExtensionPopupPage extends React.Component<any, ExtensionPo
               type: TYPE_SCRAPE,
               uid: uid,
               parentContextUid: messageContext.context == null ? null : messageContext.context.uid,
-              templateName: messageContext.template.name,
+              template: messageContext.template,
               parseFields: messageContext.template.parsableFields,
+              settings: messageContext.settings
           });
         });
       }
@@ -225,18 +155,18 @@ export default class ExtensionPopupPage extends React.Component<any, ExtensionPo
   }
 
   savePreviewedData = () => {
-      let previewingData = this.state.previewingData.get();
-      if(previewingData.length < 1) {
-          // Somehow there isn't any data in the array
-          return;
-      }
-      //TODO--Send a message to the background func to actually save the data
-
-      // Remove the value that we saved and then write it back to storage
-      previewingData = previewingData.splice(0, 1)
-      this.setState({
-          previewingData: this.state.previewingData.update(previewingData)
-      })
+      // let previewingData = this.state.previewingData.get();
+      // if(previewingData.length < 1) {
+      //     // Somehow there isn't any data in the array
+      //     return;
+      // }
+      // //TODO--Send a message to the background func to actually save the data
+      //
+      // // Remove the value that we saved and then write it back to storage
+      // previewingData = previewingData.splice(0, 1)
+      // this.setState({
+      //     previewingData: this.state.previewingData.update(previewingData)
+      // })
   }
 
   render() {
@@ -286,6 +216,26 @@ export default class ExtensionPopupPage extends React.Component<any, ExtensionPo
               sx={{
                 position: "absolute",
                 ...SETTINGS_POSITION
+              }}
+              previewData={this.state.parseSettings.get().previewData}
+              moveToContext={this.state.parseSettings.get().moveToContext}
+              previewDataChanged={(value) => {
+                  const settings = this.state.parseSettings.get();
+                  this.setState({
+                      parseSettings: this.state.parseSettings.update({
+                          previewData: value,
+                          moveToContext: settings.moveToContext
+                      })
+                  });
+              }}
+              moveToContextChanged={(value) => {
+                  const settings = this.state.parseSettings.get();
+                  this.setState({
+                      parseSettings: this.state.parseSettings.update({
+                          previewData: settings.previewData,
+                          moveToContext: value
+                      })
+                  });
               }}
           />
 
