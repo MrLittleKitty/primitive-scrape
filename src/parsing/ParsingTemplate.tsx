@@ -40,7 +40,7 @@ let BUILDING_TEMPLATE : ParsingTemplate = {
     parsableFields: [
         {
           name: "Name",
-          nodeSelector: "#content > main > div.row.DetailsPage > article:nth-child(4) > section:nth-child(9) > div > div.backend_data.BuildingInfo-item > a",
+          nodeSelector: "#content > main > div.row.DetailsPage > article:nth-child(4) > section:nth-child(8) > div > div.backend_data.BuildingInfo-item > a",
           processorFunctionName: TEXT_EXTRACT_NAME,
         },
         {

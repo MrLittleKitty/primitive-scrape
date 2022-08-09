@@ -74,7 +74,7 @@ function listenForParseMessage(request: ParseMessage, sender: chrome.runtime.Mes
                     name: extractName(request.template.fieldToExtractContextNameFrom, parsedFields),
 
                     page: {
-                        url: document.location.href,
+                        url: request.url,
                         parsedFields: parsedFields
                     },
                     templateName: request.template.name,

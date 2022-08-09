@@ -10,6 +10,7 @@ function scrapeBody(request: ScrapeMessage) {
             template: request.template,
             parseFields: request.parseFields,
             settings: request.settings,
+            url: document.location.href,
         })
     }
     else {

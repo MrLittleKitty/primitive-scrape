@@ -25,7 +25,8 @@ export interface ScrapeResponse {
 }
 
 export interface ParseMessage extends ScrapeMessage {
-    body: string | null
+    body: string | null,
+    url: string
 }
 
 export interface ParseResponse {

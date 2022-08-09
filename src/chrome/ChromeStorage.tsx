@@ -12,12 +12,12 @@ export interface StorageInterface<T> {
     update(value: T) : StorageInterface<T>
 }
 
-export function newReadOnlyLocalStorage<T>(name: string, defaultValue: T,  useDefaultFunc: ((loadedValue: any) => boolean) = (value) => value == null) : ReadOnlyStorageInterface<T> {
-    return new LocalChromeStorage<T>(name, defaultValue, useDefaultFunc, false, true);
+export function newReadOnlyLocalStorage<T>(name: string, defaultValue: T, listenerChangedValue: (value: ReadOnlyStorageInterface<T>) => void,  useDefaultFunc: ((loadedValue: any) => boolean) = (value) => value == null) : ReadOnlyStorageInterface<T> {
+    return new LocalChromeStorage<T>(name, defaultValue, listenerChangedValue, useDefaultFunc, false, true);
 }
 
 export function newLocalStorage<T>(name: string, defaultValue: T,  useDefaultFunc: ((loadedValue: any) => boolean) = (value) => value == null) : StorageInterface<T> {
-    return new LocalChromeStorage<T>(name, defaultValue, useDefaultFunc, true, false);
+    return new LocalChromeStorage<T>(name, defaultValue, null, useDefaultFunc, true, false);
 }
 
 class LocalChromeStorage<T> implements StorageInterface<T>, ReadOnlyStorageInterface<T> {
@@ -25,15 +25,18 @@ class LocalChromeStorage<T> implements StorageInterface<T>, ReadOnlyStorageInter
     readonly defaultValue: T;
     readonly saveDefault: boolean
 
+    listenerChangedValue: ((value: ReadOnlyStorageInterface<T>) => void)|null;
+
     useDefaultFunc: ((loadedValue: any) => boolean);
     value: T;
 
-    constructor(name: string, defaultValue: T, useDefaultFunc: ((loadedValue: any) => boolean), saveDefault: boolean, registerListener: boolean) {
+    constructor(name: string, defaultValue: T, listenerChangedValue: ((value: ReadOnlyStorageInterface<T>) => void)|null, useDefaultFunc: ((loadedValue: any) => boolean), saveDefault: boolean, registerListener: boolean) {
         this.name = name;
         this.defaultValue = defaultValue;
         this.value = defaultValue;
         this.useDefaultFunc = useDefaultFunc;
         this.saveDefault = saveDefault;
+        this.listenerChangedValue = listenerChangedValue;
 
         if(registerListener) {
             chrome.storage.onChanged.addListener(this.listener);
@@ -46,6 +49,10 @@ class LocalChromeStorage<T> implements StorageInterface<T>, ReadOnlyStorageInter
                 //Listen to changes of the actual value
                 const newValue = changes[this.name]?.newValue;
                 this.value = newValue;
+
+                if(this.listenerChangedValue != null) {
+                    this.listenerChangedValue(this);
+                }
             }
         }
     }
@@ -61,7 +68,6 @@ class LocalChromeStorage<T> implements StorageInterface<T>, ReadOnlyStorageInter
             if(this.saveDefault) {
                 await this.set(this.defaultValue);
             }
-
         } else {
             this.value = tempValue;
         }

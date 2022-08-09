@@ -1,10 +1,9 @@
 import React from 'react';
 import {
   ScrapeMessage,
-  TYPE_PARSE_SUCCEEDED,
   TYPE_SCRAPE
 } from "./chrome/MessagePassing";
-import {Box, Button} from "@mui/material";
+import {Box} from "@mui/material";
 import CurrentContextViewerComponent from "./components/CurrentContextViewerComponent";
 import {
     CHANGE_CONTEXT_POSITION,
@@ -64,13 +63,19 @@ export default class ExtensionPopupPage extends React.Component<any, ExtensionPo
   constructor(props: any) {
     super(props);
     this.state = {
-        contexts: newReadOnlyLocalStorage("contexts", {}, (value) => (value == null || Object.keys(value).length < 1)),
+        contexts: newReadOnlyLocalStorage("contextStorage", {}, (value) => this.setState({
+            contexts: value
+        }), (value) => (value == null || Object.keys(value).length < 1)),
         templates: newLocalStorage("templates", STREET_EASY_BUILDING_EXPLORER_TEMPLATE_MAP, (value) => (value == null || Object.keys(value).length < 1)),
 
-        currentContext: newReadOnlyLocalStorage("currentContext", null),
+        currentContext: newReadOnlyLocalStorage("currentContext", null, (value) => this.setState({
+            currentContext: value
+        })),
         currentTemplate: newLocalStorage("currentTemplate", STREET_EASY_BUILDING_EXPLORER_TEMPLATE_MAP["Building"], (value) => (value == null || Object.keys(value).length < 1)),
 
-        previewingData: newReadOnlyLocalStorage("previewingData", [], (value) => (value == null || value.length < 1)),
+        previewingData: newReadOnlyLocalStorage("previewingData", [], (value) => this.setState({
+            previewingData: value
+        }),(value) => (value == null || value.length < 1)),
         getPreviewDataFunc: null,
 
         parseSettings: newLocalStorage("parseSettings", {
@@ -87,8 +92,6 @@ export default class ExtensionPopupPage extends React.Component<any, ExtensionPo
     loadStateFromStorage(this.state, "currentContext", setState);
     loadStateFromStorage(this.state, "currentTemplate", setState);
     loadStateFromStorage(this.state, "parseSettings", setState);
-
-
   }
 
   // saveParsedData = (page: ParsedPage, context: ParsingContext | null) => {
