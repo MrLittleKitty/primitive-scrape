@@ -1,7 +1,8 @@
 import React from 'react';
 import {
-  ScrapeMessage,
-  TYPE_SCRAPE
+    ChangeCurrentContextMessage,
+    ScrapeMessage, TYPE_CHANGE_CURRENT_CONTEXT,
+    TYPE_SCRAPE
 } from "./chrome/MessagePassing";
 import {Box} from "@mui/material";
 import CurrentContextViewerComponent from "./components/CurrentContextViewerComponent";
@@ -172,6 +173,13 @@ export default class ExtensionPopupPage extends React.Component<any, ExtensionPo
       // })
   }
 
+  sendChangeContextMessage = (context: ParsingContext) => {
+      chrome.runtime.sendMessage<ChangeCurrentContextMessage>({
+          type: TYPE_CHANGE_CURRENT_CONTEXT,
+          contextUid: context.uid,
+      });
+  }
+
   render() {
     const previewData = this.state.previewingData.get();
 
@@ -198,6 +206,7 @@ export default class ExtensionPopupPage extends React.Component<any, ExtensionPo
                 }}
                 currentContext={this.state.currentContext.get()}
                 contexts={this.state.contexts.get()}
+                changeContextCallback={this.sendChangeContextMessage}
               />
           }
 

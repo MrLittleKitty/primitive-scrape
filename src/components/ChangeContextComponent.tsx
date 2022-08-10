@@ -8,6 +8,8 @@ interface ChangeContextComponentProps {
     sx: SxProps<Theme>
     contexts: ContextMap
     currentContext: ParsingContext | null
+
+    changeContextCallback: (context: ParsingContext) => void
 }
 
 interface ChangeContextComponentState {
@@ -28,7 +30,7 @@ export default class ChangeContextComponent extends React.Component<ChangeContex
                     marginLeft: index === 0 ? "0" : "8px",
                 }}
                 context={context}
-                contextBlockClicked={(context) => {}}
+                contextBlockClicked={this.props.changeContextCallback}
             />
         )
     }

@@ -1,7 +1,8 @@
 import {
+    ChangeCurrentContextMessage,
     ParseMessage,
     ParseResponse,
-    SaveContextMessage,
+    SaveContextMessage, TYPE_CHANGE_CURRENT_CONTEXT,
     TYPE_PARSE,
     TYPE_PARSE_SUCCEEDED, TYPE_SAVE_CONTEXT
 } from "../chrome/MessagePassing";
@@ -103,6 +104,17 @@ function listenForParseMessage(request: ParseMessage, sender: chrome.runtime.Mes
     return true
 }
 
+function listenForChangeCurrentContext(request: ChangeCurrentContextMessage) {
+    if(request.type === TYPE_CHANGE_CURRENT_CONTEXT) {
+        const newContext = CONTEXT_MAP.get()[request.contextUid];
+        if(newContext !== null) {
+            CURRENT_CONTEXT.set(newContext);
+        }
+    }
+
+    return true;
+}
+
 function listenForSaveMessage(request: SaveContextMessage) {
     if(request.type === TYPE_SAVE_CONTEXT) {
        saveData(request.context, request.updatedParentContext, request.settings);
@@ -135,3 +147,4 @@ function saveData(context: ParsingContext, updatedParentContext: ParsingContext|
 console.log("Starting the parse service worker")
 chrome.runtime.onMessage.addListener(listenForParseMessage);
 chrome.runtime.onMessage.addListener(listenForSaveMessage);
+chrome.runtime.onMessage.addListener(listenForChangeCurrentContext);
