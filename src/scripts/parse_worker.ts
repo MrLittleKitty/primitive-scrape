@@ -57,7 +57,6 @@ function extractName(fieldName: string, fields: ParsedField[]) : string {
 }
 
 function listenForParseMessage(request: ParseMessage, sender: chrome.runtime.MessageSender, sendResponse: (response: ParseResponse) => void) {
-    console.log("Parse service worker received message")
     if(request.type === TYPE_PARSE) {
         if(request.body != null) {
             const parsedFields = parseBody(request.body, request.parseFields)
@@ -70,7 +69,7 @@ function listenForParseMessage(request: ParseMessage, sender: chrome.runtime.Mes
                     parentContextUid: request.parentContextUid,
                     childContextsUids: [],
 
-                    uid: uuidv4(),
+                    uid: request.uid,
                     name: extractName(request.template.fieldToExtractContextNameFrom, parsedFields),
 
                     page: {
@@ -81,9 +80,14 @@ function listenForParseMessage(request: ParseMessage, sender: chrome.runtime.Mes
                 }
 
                 if(request.parentContextUid != null) {
+                    console.log("Context map and target parent context ID", CONTEXT_MAP.get(), request.parentContextUid);
                     const updatedParentContext: ParsingContext = CONTEXT_MAP.get()[request.parentContextUid];
-                    updatedParentContext['childContextsUids'].push(newContext.uid);
-                    saveData(newContext, updatedParentContext, request.settings);
+                    if(updatedParentContext == null) {
+                        console.log("Parent context not found when it should be", request.parentContextUid)
+                    } else {
+                        updatedParentContext.childContextsUids.push(newContext.uid);
+                        saveData(newContext, updatedParentContext, request.settings);
+                    }
                 } else {
                     saveData(newContext, null, request.settings);
                 }
@@ -114,9 +118,11 @@ function saveData(context: ParsingContext, updatedParentContext: ParsingContext|
         [context.uid]: context
     };
 
-    if(updatedParentContext != null) {
-        newContextMap[updatedParentContext.uid] = updatedParentContext
-    }
+    console.log("newContextMap", newContextMap)
+
+    // if(updatedParentContext != null) {
+    //     newContextMap[updatedParentContext.uid] = updatedParentContext
+    // }
 
     if(settings.moveToContext) {
         CURRENT_CONTEXT.set(context);

@@ -22,7 +22,6 @@ function scrapeBody(request: ScrapeMessage) {
 }
 
 function acceptMessage(request: ScrapeMessage, sender: chrome.runtime.MessageSender, sendResponse: (response: ScrapeResponse) => void) {
-    console.log("Scraping content script received a message")
     if(request.type === TYPE_SCRAPE) {
         console.log("Ready state:", document.readyState)
         scrapeBody(request);

@@ -48,6 +48,7 @@ class LocalChromeStorage<T> implements StorageInterface<T>, ReadOnlyStorageInter
             if(changes[this.name]?.newValue) {
                 //Listen to changes of the actual value
                 const newValue = changes[this.name]?.newValue;
+                console.log("Detected read only local storage update", this.name, newValue);
                 this.value = newValue;
 
                 if(this.listenerChangedValue != null) {
@@ -60,11 +61,9 @@ class LocalChromeStorage<T> implements StorageInterface<T>, ReadOnlyStorageInter
     async load(): Promise<StorageInterface<T>> {
         // @ts-ignore
         const json = await chrome.storage.local.get([this.name])
-        console.log("Loading from storage:", json);
         const tempValue = json[this.name];
         // Use the provided function to determine if this value is really considered "null" from storage
         if(this.useDefaultFunc(tempValue)) {
-            console.log("Loaded nothing from storage", this.name)
             if(this.saveDefault) {
                 await this.set(this.defaultValue);
             }
