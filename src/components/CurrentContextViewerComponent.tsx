@@ -57,7 +57,7 @@ export default class CurrentContextViewerComponent extends React.Component<Curre
             }}>
                 <Box sx={{
                     marginLeft: "10px",
-                    marginRight: "10px"
+                    marginRight: "10px",
                 }}>
                     <Box sx={{
                         width: CURRENT_CONTEXT_VIEWER_DIMENSIONS.width,
@@ -75,11 +75,17 @@ export default class CurrentContextViewerComponent extends React.Component<Curre
                             Current Context
                         </Typography>
                     </Box>
-                    <Stack
-                        spacing={1}
-                    >
-                        {Object.values(contextTree).map(this.createContextTreeItem)}
-                    </Stack>
+                    <Box sx={{
+                        overflowY: "auto",
+                        overflowX: "hidden",
+                        height: CURRENT_CONTEXT_VIEWER_DIMENSIONS.height-HEADER_HEIGHT,
+                    }}>
+                        <Stack
+                            spacing={1}
+                        >
+                            {Object.values(contextTree).map(this.createContextTreeItem)}
+                        </Stack>
+                    </Box>
                 </Box>
             </Box>
         )

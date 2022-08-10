@@ -1,6 +1,6 @@
 import React from "react";
 import {Box, Stack, SxProps, Theme, Typography} from "@mui/material";
-import {CHANGE_CONTEXT_DIMENSIONS, CURRENT_CONTEXT_VIEWER_DIMENSIONS, HEADER_HEIGHT} from "./PositionsAndDimensions";
+import {CHANGE_CONTEXT_DIMENSIONS, HEADER_HEIGHT} from "./PositionsAndDimensions";
 import {ContextMap, ParsingContext} from "../parsing/ParsingContext";
 import ContextBlockComponent from "./ContextBlockComponent";
 
@@ -60,19 +60,26 @@ export default class ChangeContextComponent extends React.Component<ChangeContex
                             Change Current Context
                         </Typography>
                     </Box>
+
                     <Box sx={{
-                        display: "flex",
-                        alignItems: "center"
+                        overflowY: "auto",
+                        overflowX: "hidden",
+                        height: CHANGE_CONTEXT_DIMENSIONS.height-HEADER_HEIGHT,
                     }}>
-                        <Stack
-                            direction={"row"}
-                            sx={{
-                                flexWrap: "wrap",
-                                flex: 1,
-                            }}
-                        >
-                            {Object.values(this.props.contexts).filter(value => this.props.currentContext == null || value.uid !== this.props.currentContext.uid).map(this.createContextItem)}
-                        </Stack>
+                        <Box sx={{
+                            display: "flex",
+                            alignItems: "center",
+                        }}>
+                            <Stack
+                                direction={"row"}
+                                sx={{
+                                    flexWrap: "wrap",
+                                    flex: 1,
+                                }}
+                            >
+                                {Object.values(this.props.contexts).filter(value => this.props.currentContext == null || value.uid !== this.props.currentContext.uid).map(this.createContextItem)}
+                            </Stack>
+                        </Box>
                     </Box>
                 </Box>
             </Box>
