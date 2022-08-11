@@ -1,7 +1,7 @@
 import React from 'react';
 import {
-    ChangeCurrentContextMessage,
-    ScrapeMessage, TYPE_CHANGE_CURRENT_CONTEXT,
+    ChangeCurrentContextMessage, ChangeTemplateMessage,
+    ScrapeMessage, TYPE_CHANGE_CURRENT_CONTEXT, TYPE_CHANGE_TEMPLATE,
     TYPE_SCRAPE
 } from "./chrome/MessagePassing";
 import {Box} from "@mui/material";
@@ -37,8 +37,8 @@ interface ExtensionPopupPageState {
     contexts: ReadOnlyStorageInterface<ContextMap>
     currentContext: ReadOnlyStorageInterface<ParsingContext | null>,
 
-    templates: StorageInterface<ParsingTemplateMap>,
-    currentTemplate: StorageInterface<ParsingTemplate>,
+    templates: ReadOnlyStorageInterface<ParsingTemplateMap>,
+    currentTemplate: ReadOnlyStorageInterface<ParsingTemplate|null>,
 
     previewingData: ReadOnlyStorageInterface<ParsedDataPreview[]>,
     getPreviewDataFunc: (() => ParsedDataPreview)|null,
@@ -67,12 +67,16 @@ export default class ExtensionPopupPage extends React.Component<any, ExtensionPo
         contexts: newReadOnlyLocalStorage("contextStorage", {}, (value) => this.setState({
             contexts: value
         }), (value) => (value == null || Object.keys(value).length < 1)),
-        templates: newLocalStorage("templates", STREET_EASY_BUILDING_EXPLORER_TEMPLATE_MAP, (value) => (value == null || Object.keys(value).length < 1)),
+        templates: newReadOnlyLocalStorage("templates", STREET_EASY_BUILDING_EXPLORER_TEMPLATE_MAP, (value) => this.setState({
+            templates: value
+        }),(value) => (value == null || Object.keys(value).length < 1)),
 
         currentContext: newReadOnlyLocalStorage("currentContext", null, (value) => this.setState({
             currentContext: value
         })),
-        currentTemplate: newLocalStorage("currentTemplate", STREET_EASY_BUILDING_EXPLORER_TEMPLATE_MAP["Building"], (value) => (value == null || Object.keys(value).length < 1)),
+        currentTemplate: newReadOnlyLocalStorage("currentTemplate", STREET_EASY_BUILDING_EXPLORER_TEMPLATE_MAP["Building"], (value) => this.setState({
+            currentTemplate: value
+        }),(value) => (value == null || Object.keys(value).length < 1)),
 
         previewingData: newReadOnlyLocalStorage("previewingData", [], (value) => this.setState({
             previewingData: value
@@ -87,8 +91,8 @@ export default class ExtensionPopupPage extends React.Component<any, ExtensionPo
 
     const setState = this.setState.bind(this)
 
+    // The strings used is these functions are the fields names inside this.state, not the key used in local storage
     loadStateFromStorage(this.state, "contexts", setState);
-
     loadStateFromStorage(this.state, "templates", setState);
     loadStateFromStorage(this.state, "currentContext", setState);
     loadStateFromStorage(this.state, "currentTemplate", setState);
@@ -132,8 +136,15 @@ export default class ExtensionPopupPage extends React.Component<any, ExtensionPo
 
   sendScrapeMessage = () => {
     const uid = uuidv4();
+
+    const template = this.state.currentTemplate.get();
+    if(template == null) {
+        //You can't parse anything with a null template
+        return
+    }
+
     const messageContext = {
-        template: this.state.currentTemplate.get(),
+        template: template,
         context: this.state.currentContext.get(),
         settings: this.state.parseSettings.get(),
     }
@@ -180,8 +191,22 @@ export default class ExtensionPopupPage extends React.Component<any, ExtensionPo
       });
   }
 
+  sendChangeTemplateMessage = (template: ParsingTemplate) => {
+      chrome.runtime.sendMessage<ChangeTemplateMessage>({
+          type: TYPE_CHANGE_TEMPLATE,
+          template: template
+      });
+  }
+
   render() {
-    const previewData = this.state.previewingData.get();
+      const template = this.state.currentTemplate.get();
+      const previewData = this.state.previewingData.get();
+      if(template == null) {
+          return (
+              <>
+              </>
+          )
+      }
 
       return (
         <Box sx={{
@@ -256,15 +281,9 @@ export default class ExtensionPopupPage extends React.Component<any, ExtensionPo
                 position: "absolute",
                 ...TEMPLATE_POSITION,
             }}
-            currentTemplate={this.state.currentTemplate.get()}
+            currentTemplate={template}
             templates={this.state.templates.get()}
-            templateChangedFunc={(template) => {
-                this.setState(oldState => {
-                    return {
-                        currentTemplate: oldState.currentTemplate.update(template)
-                    }
-                })
-            }}
+            templateChangedFunc={this.sendChangeTemplateMessage}
           />
 
           <PaperButton

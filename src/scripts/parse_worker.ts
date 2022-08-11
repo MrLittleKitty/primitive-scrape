@@ -1,8 +1,8 @@
 import {
-    ChangeCurrentContextMessage,
+    ChangeCurrentContextMessage, ChangeTemplateMessage,
     ParseMessage,
     ParseResponse,
-    SaveContextMessage, TYPE_CHANGE_CURRENT_CONTEXT,
+    SaveContextMessage, TYPE_CHANGE_CURRENT_CONTEXT, TYPE_CHANGE_TEMPLATE,
     TYPE_PARSE,
     TYPE_PARSE_SUCCEEDED, TYPE_SAVE_CONTEXT
 } from "../chrome/MessagePassing";
@@ -17,6 +17,7 @@ import {ContextMap, ParsingContext} from "../parsing/ParsingContext";
 import {ParseSettings} from "../parsing/ParseSettings";
 import {ParsedPage} from "../parsing/ParsedPage";
 import { v4 as uuidv4 } from 'uuid';
+import {ParsingTemplate, ParsingTemplateMap} from "../parsing/ParsingTemplate";
 
 // const LOCAL_ADDRESS = "127.0.0.1:3001"
 // const APOLLO_CLIENT = new ApolloClient({
@@ -26,11 +27,20 @@ import { v4 as uuidv4 } from 'uuid';
 
 let CONTEXT_MAP : StorageInterface<ContextMap> = newLocalStorage("contextStorage", {})
 let CURRENT_CONTEXT : StorageInterface<ParsingContext|null> = newLocalStorage("currentContext", null);
+let TEMPLATE_MAP : StorageInterface<ParsingTemplateMap> = newLocalStorage("templates", {});
+let CURRENT_TEMPLATE : StorageInterface<ParsingTemplate|null> = newLocalStorage("currentTemplate", null);
+
 CONTEXT_MAP.load().then((value) => {
     CONTEXT_MAP = value;
 });
 CURRENT_CONTEXT.load().then((value) => {
     CURRENT_CONTEXT = value;
+});
+TEMPLATE_MAP.load().then((value) => {
+    TEMPLATE_MAP = value;
+});
+CURRENT_TEMPLATE.load().then((value) => {
+    CURRENT_TEMPLATE = value;
 });
 
 function parseBody(body: string, parseFields: ParseFieldTarget[]) : ParsedField[] {
@@ -115,6 +125,14 @@ function listenForChangeCurrentContext(request: ChangeCurrentContextMessage) {
     return true;
 }
 
+function listenForChangeTemplate(request: ChangeTemplateMessage) {
+    if(request.type === TYPE_CHANGE_TEMPLATE) {
+       CURRENT_TEMPLATE.set(request.template);
+    }
+
+    return true;
+}
+
 function listenForSaveMessage(request: SaveContextMessage) {
     if(request.type === TYPE_SAVE_CONTEXT) {
        saveData(request.context, request.updatedParentContext, request.settings);
@@ -148,3 +166,4 @@ console.log("Starting the parse service worker")
 chrome.runtime.onMessage.addListener(listenForParseMessage);
 chrome.runtime.onMessage.addListener(listenForSaveMessage);
 chrome.runtime.onMessage.addListener(listenForChangeCurrentContext);
+chrome.runtime.onMessage.addListener(listenForChangeTemplate);
