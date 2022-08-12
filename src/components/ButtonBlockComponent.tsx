@@ -1,24 +1,24 @@
 import React from "react";
-import {ParsingContext} from "../parsing/ParsingContext";
-import {Box, Button, Paper, SxProps, Theme, Typography} from "@mui/material";
+import {SxProps, Theme} from "@mui/material";
 import PaperButton from "./PaperButton";
 
-
-interface ContextBlockComponentProps {
+interface ButtonBlockComponentProps<T> {
     sx: SxProps<Theme>
-    context: ParsingContext
+    value: T
 
-    contextBlockClicked: (context: ParsingContext) => void
+    onClick: (value: T) => void
 }
 
-interface ContextBlockComponentState {
+interface ButtonBlockComponentState {
     elevation: number,
     backgroundColor: string
 }
 
-export default class ContextBlockComponent extends React.Component<ContextBlockComponentProps, ContextBlockComponentState> {
+type ButtonBlockComponentPropsWithChildren<T> = React.PropsWithChildren<ButtonBlockComponentProps<T>>
 
-    constructor(props: ContextBlockComponentProps) {
+export default class ButtonBlockComponent<T> extends React.Component<ButtonBlockComponentPropsWithChildren<T>, ButtonBlockComponentState> {
+
+    constructor(props: ButtonBlockComponentPropsWithChildren<T>) {
         super(props);
         this.state = {
             elevation: 0,
@@ -50,9 +50,9 @@ export default class ContextBlockComponent extends React.Component<ContextBlockC
                 color={"#ececec"}
                 clickColor={"#c9c9c9"}
                 textColor={"#404040"}
-                onClick={() => this.props.contextBlockClicked(this.props.context)}
+                onClick={() => this.props.onClick(this.props.value)}
             >
-                {this.props.context.name}
+                {this.props.children}
             </PaperButton>
         )
     }

@@ -1,13 +1,15 @@
 import React from "react";
 import {Box, Stack, SxProps, Theme, Typography} from "@mui/material";
-import {CURRENT_CONTEXT_VIEWER_DIMENSIONS, HEADER_HEIGHT, TEMPLATE_DIMENSIONS} from "./PositionsAndDimensions";
+import {CURRENT_CONTEXT_VIEWER_DIMENSIONS, HEADER_HEIGHT} from "./PositionsAndDimensions";
 import {ContextMap, ParsingContext} from "../parsing/ParsingContext";
-import ContextBlockComponent from "./ContextBlockComponent";
+import ButtonBlockComponent from "./ButtonBlockComponent";
 
 interface CurrentContextViewerComponentProps {
     sx: SxProps<Theme>
     contexts: ContextMap,
     currentContext: ParsingContext|null,
+
+    contextClicked: (context: ParsingContext|null) => void,
 }
 
 interface CurrentContextViewerComponentState {
@@ -20,7 +22,7 @@ export default class CurrentContextViewerComponent extends React.Component<Curre
         super(props);
     }
 
-    createContextTree = (startingContext: ParsingContext|null, contextMap: ContextMap) : ParsingContext[] => {
+    createContextTree = (startingContext: ParsingContext|null, contextMap: ContextMap) : JSX.Element[] => {
         if(startingContext == null) {
             return []
         }
@@ -31,24 +33,39 @@ export default class CurrentContextViewerComponent extends React.Component<Curre
             tree.push(parent)
             root = parent;
         }
-        tree = tree.reverse();
-        return tree
+        let components = Object.values(tree).map(this.createContextTreeItem)
+        components.push(
+            (
+                <ButtonBlockComponent
+                    sx={{
+
+                    }}
+                    value={null}
+                    onClick={this.props.contextClicked}>
+                    Clear Context
+                </ButtonBlockComponent>
+            )
+        );
+        components = components.reverse();
+        return components
     }
 
     createContextTreeItem = (context: ParsingContext, index: number) => {
         return (
-            <ContextBlockComponent
+            <ButtonBlockComponent
                 sx={{
 
                 }}
-                context={context}
-                contextBlockClicked={(context) => {}}
-            />
+                value={context}
+                onClick={this.props.contextClicked}
+            >
+                {context.name}
+            </ButtonBlockComponent>
         )
     }
 
     render() {
-        const contextTree = this.createContextTree(this.props.currentContext, this.props.contexts);
+        const contextTree : JSX.Element[] = this.createContextTree(this.props.currentContext, this.props.contexts);
         return (
             <Box sx={{
                 ...this.props.sx,
@@ -83,7 +100,7 @@ export default class CurrentContextViewerComponent extends React.Component<Curre
                         <Stack
                             spacing={1}
                         >
-                            {Object.values(contextTree).map(this.createContextTreeItem)}
+                            {contextTree}
                         </Stack>
                     </Box>
                 </Box>

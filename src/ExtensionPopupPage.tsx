@@ -184,10 +184,11 @@ export default class ExtensionPopupPage extends React.Component<any, ExtensionPo
       // })
   }
 
-  sendChangeContextMessage = (context: ParsingContext) => {
+  sendChangeContextMessage = (context: ParsingContext|null) => {
+      console.log("Trying to change to", context);
       chrome.runtime.sendMessage<ChangeCurrentContextMessage>({
           type: TYPE_CHANGE_CURRENT_CONTEXT,
-          contextUid: context.uid,
+          contextUid: context != null ? context.uid : null,
       });
   }
 
@@ -221,6 +222,7 @@ export default class ExtensionPopupPage extends React.Component<any, ExtensionPo
               }}
               currentContext={this.state.currentContext.get()}
               contexts={this.state.contexts.get()}
+              contextClicked={this.sendChangeContextMessage}
           />
 
           {previewData.length < 1 &&

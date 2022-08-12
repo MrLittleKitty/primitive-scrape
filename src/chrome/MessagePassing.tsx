@@ -35,7 +35,7 @@ export interface ParseResponse {
 }
 
 export interface ChangeCurrentContextMessage extends Message {
-    contextUid: string,
+    contextUid: string|null,
 }
 
 export interface ChangeTemplateMessage extends Message {

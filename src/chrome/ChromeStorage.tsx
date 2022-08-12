@@ -45,7 +45,7 @@ class LocalChromeStorage<T> implements StorageInterface<T>, ReadOnlyStorageInter
 
     listener = (changes: {[p: string]: chrome.storage.StorageChange}, area: AreaName) => {
         if (area === 'local') {
-            if(changes[this.name]?.newValue) {
+            if(changes[this.name]?.newValue || changes[this.name]?.oldValue) {
                 //Listen to changes of the actual value
                 const newValue = changes[this.name]?.newValue;
                 console.log("Detected read only local storage update", this.name, newValue);

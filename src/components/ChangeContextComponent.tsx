@@ -2,7 +2,7 @@ import React from "react";
 import {Box, Stack, SxProps, Theme, Typography} from "@mui/material";
 import {CHANGE_CONTEXT_DIMENSIONS, HEADER_HEIGHT} from "./PositionsAndDimensions";
 import {ContextMap, ParsingContext} from "../parsing/ParsingContext";
-import ContextBlockComponent from "./ContextBlockComponent";
+import ButtonBlockComponent from "./ButtonBlockComponent";
 
 interface ChangeContextComponentProps {
     sx: SxProps<Theme>
@@ -24,14 +24,16 @@ export default class ChangeContextComponent extends React.Component<ChangeContex
 
     createContextItem = (context: ParsingContext, index: number) => {
         return (
-            <ContextBlockComponent
+            <ButtonBlockComponent
                 sx={{
                     marginBottom: "8px",
                     marginLeft: index === 0 ? "0" : "8px",
                 }}
-                context={context}
-                contextBlockClicked={this.props.changeContextCallback}
-            />
+                value={context}
+                onClick={this.props.changeContextCallback}
+            >
+                {context.name}
+            </ButtonBlockComponent>
         )
     }
 

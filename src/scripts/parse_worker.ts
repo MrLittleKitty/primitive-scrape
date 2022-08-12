@@ -116,8 +116,10 @@ function listenForParseMessage(request: ParseMessage, sender: chrome.runtime.Mes
 
 function listenForChangeCurrentContext(request: ChangeCurrentContextMessage) {
     if(request.type === TYPE_CHANGE_CURRENT_CONTEXT) {
-        const newContext = CONTEXT_MAP.get()[request.contextUid];
-        if(newContext !== null) {
+        const newContext = request.contextUid == null ? null : CONTEXT_MAP.get()[request.contextUid];
+        // If the context we want to change is something other than empty but then we don't find it in the map, its bad
+        console.log("New context is ", newContext)
+        if(request.contextUid === null || newContext !== null) {
             CURRENT_CONTEXT.set(newContext);
         }
     }
