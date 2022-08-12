@@ -198,12 +198,6 @@ export default class ExtensionPopupPage extends React.Component<any, ExtensionPo
       // })
   }
 
-  resolveTemplateChange = (template: ParsingTemplate) => {
-  }
-
-  resolveContextChange = (context: ParsingContext|null) => {
-  }
-
   sendChangeContextMessage = (context: ParsingContext|null) => {
       console.log("Trying to change to", context);
       chrome.runtime.sendMessage<ChangeCurrentContextMessage>({
@@ -225,6 +219,7 @@ export default class ExtensionPopupPage extends React.Component<any, ExtensionPo
       if(template == null) {
           return (
               <>
+                  Please add templates via the settings page in order to use this tool. Thank you.
               </>
           )
       }
