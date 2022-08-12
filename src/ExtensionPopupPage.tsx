@@ -17,6 +17,7 @@ import SettingsComponent from "./components/SettingsComponent";
 import TemplateViewerComponent from "./components/TemplateViewerComponent";
 import {ContextMap, ParsingContext} from "./parsing/ParsingContext";
 import {
+    genValidTemplatesForContext,
     ParsingTemplate,
     ParsingTemplateMap,
     STREET_EASY_BUILDING_EXPLORER_TEMPLATE_MAP
@@ -37,7 +38,8 @@ interface ExtensionPopupPageState {
     contexts: ReadOnlyStorageInterface<ContextMap>
     currentContext: ReadOnlyStorageInterface<ParsingContext | null>,
 
-    templates: ReadOnlyStorageInterface<ParsingTemplateMap>,
+    allTemplates: ReadOnlyStorageInterface<ParsingTemplateMap>,
+    validTemplates: ParsingTemplateMap,
     currentTemplate: ReadOnlyStorageInterface<ParsingTemplate|null>,
 
     previewingData: ReadOnlyStorageInterface<ParsedDataPreview[]>,
@@ -67,12 +69,14 @@ export default class ExtensionPopupPage extends React.Component<any, ExtensionPo
         contexts: newReadOnlyLocalStorage("contextStorage", {}, (value) => this.setState({
             contexts: value
         }), (value) => (value == null || Object.keys(value).length < 1)),
-        templates: newReadOnlyLocalStorage("templates", STREET_EASY_BUILDING_EXPLORER_TEMPLATE_MAP, (value) => this.setState({
-            templates: value
+        allTemplates: newReadOnlyLocalStorage("templates", STREET_EASY_BUILDING_EXPLORER_TEMPLATE_MAP, (value) => this.setState({
+            allTemplates: value,
+            validTemplates: genValidTemplatesForContext(this.state.currentContext.get(), this.state.allTemplates.get()),
         }),(value) => (value == null || Object.keys(value).length < 1)),
 
         currentContext: newReadOnlyLocalStorage("currentContext", null, (value) => this.setState({
-            currentContext: value
+            currentContext: value,
+            validTemplates: genValidTemplatesForContext(value.get(), this.state.allTemplates.get())
         })),
         currentTemplate: newReadOnlyLocalStorage("currentTemplate", STREET_EASY_BUILDING_EXPLORER_TEMPLATE_MAP["Building"], (value) => this.setState({
             currentTemplate: value
@@ -87,16 +91,26 @@ export default class ExtensionPopupPage extends React.Component<any, ExtensionPo
             previewData: false,
             moveToContext: true
         }),
+
+        validTemplates: {},
     }
 
     const setState = this.setState.bind(this)
 
     // The strings used is these functions are the fields names inside this.state, not the key used in local storage
+    loadStateFromStorage(this.state, "allTemplates", setState);
     loadStateFromStorage(this.state, "contexts", setState);
-    loadStateFromStorage(this.state, "templates", setState);
-    loadStateFromStorage(this.state, "currentContext", setState);
     loadStateFromStorage(this.state, "currentTemplate", setState);
     loadStateFromStorage(this.state, "parseSettings", setState);
+
+      loadStateFromStorage(this.state, "currentContext", (values) => {
+          this.setState(values);
+          this.setState({
+              //TODO--This is not really a thread safe way to ensure we can set valid templates
+              //TODO----We need to actually wait until allTemplates AND currentContext have both loaded before we can do this
+              validTemplates: genValidTemplatesForContext(this.state.currentContext.get(), this.state.allTemplates.get()),
+          })
+      });
   }
 
   // saveParsedData = (page: ParsedPage, context: ParsingContext | null) => {
@@ -182,6 +196,12 @@ export default class ExtensionPopupPage extends React.Component<any, ExtensionPo
       // this.setState({
       //     previewingData: this.state.previewingData.update(previewingData)
       // })
+  }
+
+  resolveTemplateChange = (template: ParsingTemplate) => {
+  }
+
+  resolveContextChange = (context: ParsingContext|null) => {
   }
 
   sendChangeContextMessage = (context: ParsingContext|null) => {
@@ -284,7 +304,7 @@ export default class ExtensionPopupPage extends React.Component<any, ExtensionPo
                 ...TEMPLATE_POSITION,
             }}
             currentTemplate={template}
-            templates={this.state.templates.get()}
+            templates={this.state.validTemplates}
             templateChangedFunc={this.sendChangeTemplateMessage}
           />
 

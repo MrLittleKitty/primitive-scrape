@@ -17,7 +17,7 @@ import {ContextMap, ParsingContext} from "../parsing/ParsingContext";
 import {ParseSettings} from "../parsing/ParseSettings";
 import {ParsedPage} from "../parsing/ParsedPage";
 import { v4 as uuidv4 } from 'uuid';
-import {ParsingTemplate, ParsingTemplateMap} from "../parsing/ParsingTemplate";
+import {genValidTemplatesForContext, ParsingTemplate, ParsingTemplateMap} from "../parsing/ParsingTemplate";
 
 // const LOCAL_ADDRESS = "127.0.0.1:3001"
 // const APOLLO_CLIENT = new ApolloClient({
@@ -121,6 +121,17 @@ function listenForChangeCurrentContext(request: ChangeCurrentContextMessage) {
         console.log("New context is ", newContext)
         if(request.contextUid === null || newContext !== null) {
             CURRENT_CONTEXT.set(newContext);
+
+            const validTemplates = genValidTemplatesForContext(newContext, TEMPLATE_MAP.get());
+            const currentTemplate = CURRENT_TEMPLATE.get();
+            if(currentTemplate != null) {
+                // If the current template is not in the map of valid templates (which it won't be without cycles which don't exist yet)
+                //  Then we need to change the current template to be something from the valid templates map
+                if(!validTemplates[currentTemplate.name]) {
+                    const newTemplate = Object.values(validTemplates).find((value) => value != null);
+                    CURRENT_TEMPLATE.set(newTemplate === undefined ? null : newTemplate);
+                }
+            }
         }
     }
 
