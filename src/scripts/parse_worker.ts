@@ -12,22 +12,35 @@ import {parse6Adapter} from "../parsing/Parse6Adapter";
 import {selectAll} from "css-select"
 import {ParsedField, ParseFieldTarget} from "../parsing/ParsedField";
 import {PROCESSOR_FUNCTIONS} from "../chrome/ProcessorFunctions";
-import {newLocalStorage, StorageInterface} from "../chrome/ChromeStorage";
+import {
+    newLocalStorage,
+    newReadOnlyLocalStorage,
+    ReadOnlyStorageInterface,
+    StorageInterface
+} from "../chrome/ChromeStorage";
 import {ContextMap, ParsingContext} from "../parsing/ParsingContext";
 import {ParseSettings} from "../parsing/ParseSettings";
 import {ParsedPage} from "../parsing/ParsedPage";
 import { v4 as uuidv4 } from 'uuid';
 import {genValidTemplatesForContext, ParsingTemplate, ParsingTemplateMap} from "../parsing/ParsingTemplate";
 
-// const LOCAL_ADDRESS = "127.0.0.1:3001"
-// const APOLLO_CLIENT = new ApolloClient({
-//     uri: LOCAL_ADDRESS+'/graphql',
-//     cache: new InMemoryCache()
-// });
-
-let CONTEXT_MAP : StorageInterface<ContextMap> = newLocalStorage("contextStorage", {})
+let CONTEXT_MAP : StorageInterface<ContextMap> = newLocalStorage("contextStorage", {}, (value) => (value == null || Object.keys(value).length < 1))
 let CURRENT_CONTEXT : StorageInterface<ParsingContext|null> = newLocalStorage("currentContext", null);
-let TEMPLATE_MAP : StorageInterface<ParsingTemplateMap> = newLocalStorage("templates", {});
+let TEMPLATE_MAP : ReadOnlyStorageInterface<ParsingTemplateMap> = newReadOnlyLocalStorage("templates", {}, (value) => {
+    TEMPLATE_MAP = value;
+    const validTemplates = genValidTemplatesForContext(CURRENT_CONTEXT.get(), TEMPLATE_MAP.get());
+    const currentTemplate = CURRENT_TEMPLATE.get();
+
+    // If the current template is not in the map of valid templates (which it won't be without cycles which don't exist yet)
+    //  Then we need to change the current template to be something from the valid templates map
+    if((currentTemplate != null && !validTemplates[currentTemplate.name]) || (currentTemplate == null && (validTemplates != null && Object.values(validTemplates).length > 0))) {
+        let newTemplate = Object.values(validTemplates).find((value) => value != null);
+        CURRENT_TEMPLATE.set(newTemplate === undefined ? null : newTemplate);
+    }
+    if(CURRENT_TEMPLATE.get() === null) {
+        CURRENT_CONTEXT.set(null);
+    }
+}, (value) => (value == null || Object.keys(value).length < 1));
 let CURRENT_TEMPLATE : StorageInterface<ParsingTemplate|null> = newLocalStorage("currentTemplate", null);
 
 CONTEXT_MAP.load().then((value) => {
@@ -163,9 +176,9 @@ function saveData(context: ParsingContext, updatedParentContext: ParsingContext|
 
     console.log("newContextMap", newContextMap)
 
-    // if(updatedParentContext != null) {
-    //     newContextMap[updatedParentContext.uid] = updatedParentContext
-    // }
+    if(updatedParentContext != null) {
+        newContextMap[updatedParentContext.uid] = updatedParentContext
+    }
 
     if(settings.moveToContext) {
         CURRENT_CONTEXT.set(context);

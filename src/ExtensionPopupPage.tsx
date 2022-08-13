@@ -4,7 +4,7 @@ import {
     ScrapeMessage, TYPE_CHANGE_CURRENT_CONTEXT, TYPE_CHANGE_TEMPLATE,
     TYPE_SCRAPE
 } from "./chrome/MessagePassing";
-import {Box} from "@mui/material";
+import {Box, Typography} from "@mui/material";
 import CurrentContextViewerComponent from "./components/CurrentContextViewerComponent";
 import {
     CHANGE_CONTEXT_POSITION,
@@ -20,7 +20,6 @@ import {
     genValidTemplatesForContext,
     ParsingTemplate,
     ParsingTemplateMap,
-    STREET_EASY_BUILDING_EXPLORER_TEMPLATE_MAP
 } from "./parsing/ParsingTemplate";
 import ScrapedDataPreviewComponent from "./components/ScrapedDataPreviewComponent";
 import {ParsedDataPreview} from "./parsing/ParsedDataPreview";
@@ -33,6 +32,7 @@ import {
 } from "./chrome/ChromeStorage";
 import {ParseSettings} from "./parsing/ParseSettings";
 import PaperButton from "./components/PaperButton";
+import ButtonBlockComponent from "./components/ButtonBlockComponent";
 
 interface ExtensionPopupPageState {
     contexts: ReadOnlyStorageInterface<ContextMap>
@@ -69,7 +69,7 @@ export default class ExtensionPopupPage extends React.Component<any, ExtensionPo
         contexts: newReadOnlyLocalStorage("contextStorage", {}, (value) => this.setState({
             contexts: value
         }), (value) => (value == null || Object.keys(value).length < 1)),
-        allTemplates: newReadOnlyLocalStorage("templates", STREET_EASY_BUILDING_EXPLORER_TEMPLATE_MAP, (value) => this.setState({
+        allTemplates: newReadOnlyLocalStorage("templates", {}, (value) => this.setState({
             allTemplates: value,
             validTemplates: genValidTemplatesForContext(this.state.currentContext.get(), this.state.allTemplates.get()),
         }),(value) => (value == null || Object.keys(value).length < 1)),
@@ -78,7 +78,7 @@ export default class ExtensionPopupPage extends React.Component<any, ExtensionPo
             currentContext: value,
             validTemplates: genValidTemplatesForContext(value.get(), this.state.allTemplates.get())
         })),
-        currentTemplate: newReadOnlyLocalStorage("currentTemplate", STREET_EASY_BUILDING_EXPLORER_TEMPLATE_MAP["Building"], (value) => this.setState({
+        currentTemplate: newReadOnlyLocalStorage("currentTemplate", null, (value) => this.setState({
             currentTemplate: value
         }),(value) => (value == null || Object.keys(value).length < 1)),
 
@@ -215,15 +215,30 @@ export default class ExtensionPopupPage extends React.Component<any, ExtensionPo
 
   render() {
       const template = this.state.currentTemplate.get();
-      const previewData = this.state.previewingData.get();
+      // if(template == null || Object.values(this.state.validTemplates).length < 1 || Object.values(this.state.allTemplates.get()).length < 1) {
       if(template == null) {
           return (
-              <>
-                  Please add templates via the settings page in order to use this tool. Thank you.
-              </>
+              <Box>
+                  <Typography>
+                      Please add templates via the settings page in order to use this tool. Thank you.
+                  </Typography>
+                  <ButtonBlockComponent
+                      sx={{}}
+                      value={null}
+                      onClick={(value) => {
+                          if (chrome.runtime.openOptionsPage) {
+                              chrome.runtime.openOptionsPage();
+                          } else {
+                              window.open(chrome.runtime.getURL('options_page.html'));
+                          }
+                      }}>
+                      Open the options page
+                  </ButtonBlockComponent>
+              </Box>
           )
       }
 
+      const previewData = this.state.previewingData.get();
       return (
         <Box sx={{
           height: "100%",
