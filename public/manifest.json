@@ -10,6 +10,7 @@
   "background": {
     "service_worker": "worker.js"
   },
+  "options_page": "options_page.html",
   "icons": {
     "16": "Icon-16.png",
     "48": "Icon-48.png",
