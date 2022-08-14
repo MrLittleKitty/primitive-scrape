@@ -1,4 +1,4 @@
-![primitive scrape logo](public/Icon-128.PNG)
+![primitive scrape logo](docs/App-Illustration.png)
 # Primitive Scrape
 
 A primitive Chrome extension to scrape data from websites as you visit them.
