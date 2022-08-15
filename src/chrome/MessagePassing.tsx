@@ -2,6 +2,7 @@ import {ParseFieldTarget} from "../parsing/ParsedField";
 import {ParsingContext} from "../parsing/ParsingContext";
 import {ParseSettings} from "../parsing/ParseSettings";
 import {ParsingTemplate} from "../parsing/ParsingTemplate";
+import {ParsedDataPreview} from "../parsing/ParsedDataPreview";
 
 export const TYPE_SCRAPE = "scape-message"
 export const TYPE_PARSE = "parse-message"
@@ -9,9 +10,19 @@ export const TYPE_PARSE_SUCCEEDED = "parse-message-succeeded"
 export const TYPE_SAVE_CONTEXT = "parse-save-context"
 export const TYPE_CHANGE_CURRENT_CONTEXT = "change-current-context"
 export const TYPE_CHANGE_TEMPLATE = "change-template"
+export const TYPE_SAVE_PREVIEW_DATA = "save-preview-data"
+
+export type MessageType =
+    typeof TYPE_SCRAPE |
+    typeof TYPE_PARSE |
+    typeof TYPE_PARSE_SUCCEEDED |
+    typeof TYPE_SAVE_CONTEXT |
+    typeof TYPE_CHANGE_CURRENT_CONTEXT |
+    typeof TYPE_CHANGE_TEMPLATE |
+    typeof TYPE_SAVE_PREVIEW_DATA;
 
 export interface Message {
-    type: string
+    type: MessageType
 }
 
 export interface ScrapeMessage extends Message {
@@ -46,4 +57,9 @@ export interface SaveContextMessage extends Message {
     context: ParsingContext,
     updatedParentContext: ParsingContext|null,
     settings: ParseSettings
+}
+
+export interface SavePreviewDataMessage extends Message {
+    settings: ParseSettings,
+    previewData: ParsedDataPreview
 }

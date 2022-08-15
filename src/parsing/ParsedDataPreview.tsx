@@ -1,7 +1,8 @@
 import {ParsedPage} from "./ParsedPage";
-import {ParsingContext} from "./ParsingContext";
 
 export interface ParsedDataPreview {
+    previewUid: string,
     page: ParsedPage,
-    contextUid: string | null
+    parentContextUid: string | null
+    templateName: string,
 }

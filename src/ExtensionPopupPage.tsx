@@ -1,29 +1,32 @@
 import React from 'react';
 import {
-    ChangeCurrentContextMessage, ChangeTemplateMessage,
-    ScrapeMessage, TYPE_CHANGE_CURRENT_CONTEXT, TYPE_CHANGE_TEMPLATE,
+    ChangeCurrentContextMessage,
+    ChangeTemplateMessage,
+    SavePreviewDataMessage,
+    ScrapeMessage,
+    TYPE_CHANGE_CURRENT_CONTEXT,
+    TYPE_CHANGE_TEMPLATE,
+    TYPE_SAVE_PREVIEW_DATA,
     TYPE_SCRAPE
 } from "./chrome/MessagePassing";
 import {Box, Typography} from "@mui/material";
 import CurrentContextViewerComponent from "./components/CurrentContextViewerComponent";
 import {
     CHANGE_CONTEXT_POSITION,
-    CURRENT_CONTEXT_VIEWER_POSITION, MAIN_BUTTON_DIMENSIONS,
+    CURRENT_CONTEXT_VIEWER_POSITION,
+    MAIN_BUTTON_DIMENSIONS,
     MAIN_BUTTON_POSITION,
-    SETTINGS_POSITION, TEMPLATE_POSITION
+    SETTINGS_POSITION,
+    TEMPLATE_POSITION
 } from "./components/PositionsAndDimensions";
 import ChangeContextComponent from "./components/ChangeContextComponent";
 import SettingsComponent from "./components/SettingsComponent";
 import TemplateViewerComponent from "./components/TemplateViewerComponent";
 import {ContextMap, ParsingContext} from "./parsing/ParsingContext";
-import {
-    genValidTemplatesForContext,
-    ParsingTemplate,
-    ParsingTemplateMap,
-} from "./parsing/ParsingTemplate";
+import {genValidTemplatesForContext, ParsingTemplate, ParsingTemplateMap,} from "./parsing/ParsingTemplate";
 import ScrapedDataPreviewComponent from "./components/ScrapedDataPreviewComponent";
 import {ParsedDataPreview} from "./parsing/ParsedDataPreview";
-import { v4 as uuidv4 } from 'uuid';
+import {v4 as uuidv4} from 'uuid';
 import {
     newLocalStorage,
     newReadOnlyLocalStorage,
@@ -98,6 +101,7 @@ export default class ExtensionPopupPage extends React.Component<any, ExtensionPo
     const setState = this.setState.bind(this)
 
     // The strings used is these functions are the fields names inside this.state, not the key used in local storage
+    loadStateFromStorage(this.state, "previewingData", setState);
     loadStateFromStorage(this.state, "allTemplates", setState);
     loadStateFromStorage(this.state, "contexts", setState);
     loadStateFromStorage(this.state, "currentTemplate", setState);
@@ -184,18 +188,21 @@ export default class ExtensionPopupPage extends React.Component<any, ExtensionPo
   }
 
   savePreviewedData = () => {
-      // let previewingData = this.state.previewingData.get();
-      // if(previewingData.length < 1) {
-      //     // Somehow there isn't any data in the array
-      //     return;
-      // }
-      // //TODO--Send a message to the background func to actually save the data
-      //
-      // // Remove the value that we saved and then write it back to storage
-      // previewingData = previewingData.splice(0, 1)
-      // this.setState({
-      //     previewingData: this.state.previewingData.update(previewingData)
-      // })
+      const getDataFunc = this.state.getPreviewDataFunc;
+      if(getDataFunc == null) {
+          return
+      }
+
+      const previewingData = getDataFunc();
+      if(previewingData == null) {
+          return
+      }
+
+      chrome.runtime.sendMessage<SavePreviewDataMessage>({
+          type: TYPE_SAVE_PREVIEW_DATA,
+          settings: this.state.parseSettings.get(),
+          previewData: previewingData,
+      });
   }
 
   sendChangeContextMessage = (context: ParsingContext|null) => {
