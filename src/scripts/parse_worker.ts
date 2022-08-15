@@ -22,7 +22,7 @@ import {
     ReadOnlyStorageInterface,
     StorageInterface
 } from "../chrome/ChromeStorage";
-import {ContextMap, ParsingContext} from "../parsing/ParsingContext";
+import {ContextMap, extractContextName, ParsingContext} from "../parsing/ParsingContext";
 import {ParseSettings} from "../parsing/ParseSettings";
 import {genValidTemplatesForContext, ParsingTemplate, ParsingTemplateMap} from "../parsing/ParsingTemplate";
 import {ParsedDataPreview} from "../parsing/ParsedDataPreview";
@@ -79,14 +79,7 @@ function parseBody(body: string, parseFields: ParseFieldTarget[]) : ParsedField[
     return returnVal
 }
 
-function extractName(fieldName: string, fields: ParsedField[]) : string {
-    for(let f of fields) {
-        if(f.parser.name === fieldName) {
-            return f.parsedValue;
-        }
-    }
-    return ""
-}
+
 
 function listenForParseMessage(request: ParseMessage, sender: chrome.runtime.MessageSender, sendResponse: (response: ParseResponse) => void) {
     if(request.type === TYPE_PARSE) {
@@ -113,7 +106,7 @@ function listenForParseMessage(request: ParseMessage, sender: chrome.runtime.Mes
                     request.parentContextUid,
                     [],
                     request.uid,
-                    extractName(request.template.fieldToExtractContextNameFrom, parsedFields),
+                    extractContextName(request.template.fieldToExtractContextNameFrom, parsedFields),
                     request.url,
                     parsedFields,
                     request.template.name,
@@ -174,7 +167,7 @@ function listenForSavePreviewData(request: SavePreviewDataMessage, sender: chrom
                     previewData.parentContextUid,
                     [],
                     previewData.previewUid,
-                    extractName(template.fieldToExtractContextNameFrom, previewData.page.parsedFields),
+                    extractContextName(template.fieldToExtractContextNameFrom, previewData.page.parsedFields),
                     previewData.page.url,
                     previewData.page.parsedFields,
                     previewData.templateName,

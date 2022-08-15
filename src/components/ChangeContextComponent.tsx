@@ -49,7 +49,7 @@ export default class ChangeContextComponent extends React.Component<ChangeContex
                     marginRight: "10px"
                 }}>
                     <Box sx={{
-                        width: CHANGE_CONTEXT_DIMENSIONS.width,
+                        width: CHANGE_CONTEXT_DIMENSIONS.width-20,
                         height: HEADER_HEIGHT,
                         flex: 1,
                         display: "flex",
@@ -68,7 +68,8 @@ export default class ChangeContextComponent extends React.Component<ChangeContex
                     <Box sx={{
                         overflowY: "auto",
                         overflowX: "hidden",
-                        height: CHANGE_CONTEXT_DIMENSIONS.height-HEADER_HEIGHT,
+                        width: CHANGE_CONTEXT_DIMENSIONS.width-20,
+                        height: CHANGE_CONTEXT_DIMENSIONS.height-HEADER_HEIGHT-5,
                     }}>
                         <Box sx={{
                             display: "flex",

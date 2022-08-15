@@ -281,6 +281,7 @@ export default class ExtensionPopupPage extends React.Component<any, ExtensionPo
                         ...CHANGE_CONTEXT_POSITION,
                     }}
                     previewData={previewData[0]}
+                    templates={this.state.allTemplates.get()}
                     getDataCallback={(func) => {
                         this.setState({
                             getPreviewDataFunc: func
