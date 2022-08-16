@@ -16,7 +16,7 @@ import {parse} from "parse5";
 import {parse6Adapter} from "../parsing/Parse6Adapter";
 import {selectAll} from "css-select"
 import {ParsedField, ParseFieldTarget} from "../parsing/ParsedField";
-import {PROCESSOR_FUNCTIONS} from "../chrome/ProcessorFunctions";
+import {processData} from "../chrome/ProcessorFunctions";
 import {
     newLocalStorage,
     newReadOnlyLocalStorage,
@@ -70,8 +70,7 @@ function parseBody(body: string, parseFields: ParseFieldTarget[]) : ParsedField[
     const ast = parse(body)
     for(let field of parseFields) {
         const elements = selectAll(field.nodeSelector, ast, {adapter: parse6Adapter})
-        const func = PROCESSOR_FUNCTIONS.get(field.processorFunctionName)
-        const value = func ? func(elements) : "PROCESS FUNC UNKNOWN";
+        const value = processData(field.processorFunctionName, field.processorFunctionArgument, elements)
         returnVal.push({
             parser: field,
             parsedValue: value,
@@ -79,8 +78,6 @@ function parseBody(body: string, parseFields: ParseFieldTarget[]) : ParsedField[
     }
     return returnVal
 }
-
-
 
 function listenForParseMessage(request: ParseMessage, sender: chrome.runtime.MessageSender, sendResponse: (response: ParseResponse) => void) {
     if(request.type === TYPE_PARSE) {
