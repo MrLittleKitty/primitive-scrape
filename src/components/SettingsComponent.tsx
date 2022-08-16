@@ -2,12 +2,14 @@ import React from "react";
 import {Box, FormControlLabel, FormGroup, IconButton, Switch, SxProps, Theme, Typography} from "@mui/material";
 import {HEADER_HEIGHT, SETTINGS_DIMENSIONS} from "./PositionsAndDimensions";
 import SettingsIcon from '@mui/icons-material/Settings';
+import ButtonBlockComponent from "./ButtonBlockComponent";
 
 interface SettingsComponentProps {
     sx: SxProps<Theme>
     moveToContext: boolean,
     previewData: boolean,
 
+    downloadButtonClicked: () => void,
     settingsIconClicked: () => void,
     previewDataChanged: (value: boolean) => void
     moveToContextChanged: (value: boolean) => void
@@ -66,6 +68,14 @@ export default class SettingsComponent extends React.Component<SettingsComponent
                         <FormControlLabel control={<Switch checked={this.props.previewData} onChange={(event) => this.props.previewDataChanged(event.target.checked)}/>} label="Preview Data" />
                         <FormControlLabel control={<Switch checked={this.props.moveToContext} onChange={(event) => this.props.moveToContextChanged(event.target.checked)}/>} label="Move to Context" />
                     </FormGroup>
+
+                    <ButtonBlockComponent
+                        sx={{}}
+                        value={null}
+                        onClick={(value) => this.props.downloadButtonClicked()}
+                    >
+                        Download Data
+                    </ButtonBlockComponent>
                 </Box>
             </Box>
         )

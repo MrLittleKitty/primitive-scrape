@@ -236,6 +236,15 @@ export default class ExtensionPopupPage extends React.Component<any, ExtensionPo
       }
   }
 
+  downloadContexts = () => {
+      const blob = new Blob([JSON.stringify(this.state.contexts.get())], {type: "application/json"});
+      const url = URL.createObjectURL(blob);
+      chrome.downloads.download({
+          url: url,
+          filename: "scraped_contexts.json"
+      });
+  }
+
   render() {
       const template = this.state.currentTemplate.get();
       // if(template == null || Object.values(this.state.validTemplates).length < 1 || Object.values(this.state.allTemplates.get()).length < 1) {
@@ -308,6 +317,7 @@ export default class ExtensionPopupPage extends React.Component<any, ExtensionPo
               previewData={this.state.parseSettings.get().previewData}
               moveToContext={this.state.parseSettings.get().moveToContext}
               settingsIconClicked={this.openSettings}
+              downloadButtonClicked={this.downloadContexts}
               previewDataChanged={(value) => {
                   const settings = this.state.parseSettings.get();
                   this.setState({
