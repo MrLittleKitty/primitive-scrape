@@ -1,12 +1,13 @@
 import {
     ChangeCurrentContextMessage,
-    ChangeTemplateMessage,
+    ChangeTemplateMessage, ClearPreviewDataMessage,
     ParseMessage,
     ParseResponse,
     SaveContextMessage,
     SavePreviewDataMessage,
     TYPE_CHANGE_CURRENT_CONTEXT,
     TYPE_CHANGE_TEMPLATE,
+    TYPE_CLEAR_PREVIEW_DATA,
     TYPE_PARSE,
     TYPE_SAVE_CONTEXT,
     TYPE_SAVE_PREVIEW_DATA
@@ -163,7 +164,7 @@ function listenForSavePreviewData(request: SavePreviewDataMessage, sender: chrom
         if(previewData != null ) {
             const template = TEMPLATE_MAP.get()[previewData.templateName];
             if(template != null) {
-                genNewContextAndSave(
+                const succeeded = genNewContextAndSave(
                     previewData.parentContextUid,
                     [],
                     previewData.previewUid,
@@ -174,11 +175,11 @@ function listenForSavePreviewData(request: SavePreviewDataMessage, sender: chrom
                     request.settings
                 );
 
-                // Now we remove the preview data that we just saved as a new context from the preview data storage
-                // This is so that the UI knows to update that this preview data has been saved
-                let previewDataStorage = PREVIEW_DATA.get();
-                PREVIEW_DATA.set(previewDataStorage.filter(data => data.previewUid !== previewData.previewUid))
-
+                if(succeeded) {
+                    // Now we remove the preview data that we just saved as a new context from the preview data storage
+                    // This is so that the UI knows to update that this preview data has been saved
+                    clearPreviewDataAndSave(previewData.previewUid);
+                }
                 sendResponse({})
             }
         }
@@ -187,8 +188,25 @@ function listenForSavePreviewData(request: SavePreviewDataMessage, sender: chrom
     return true;
 }
 
+function listenForClearPreviewData(request: ClearPreviewDataMessage, sender: chrome.runtime.MessageSender, sendResponse: (response: any) => void) {
+    if (request.type === TYPE_CLEAR_PREVIEW_DATA) {
+        clearPreviewDataAndSave(request.previewUid);
+        sendResponse({})
+    }
+    return true;
+}
+
+function clearPreviewDataAndSave(previewDataUid: string) : void {
+    let previewDataStorage = PREVIEW_DATA.get();
+    PREVIEW_DATA.set(previewDataStorage.filter(data => data.previewUid !== previewDataUid))
+}
+
 // Creates a new context, saves it, then updates the parent context and saves it if the settings call for it
-function genNewContextAndSave(parentContextUid: string|null, childContextUids: string[], uid: string, name: string, url: string, parsedFields: ParsedField[], templateName: string, settings: ParseSettings) : void {
+function genNewContextAndSave(parentContextUid: string|null, childContextUids: string[], uid: string, name: string, url: string, parsedFields: ParsedField[], templateName: string, settings: ParseSettings) : boolean {
+    if(name == null || name.trim() === '') {
+        return false;
+    }
+
     const newContext : ParsingContext =  {
         parentContextUid: parentContextUid,
         childContextsUids: childContextUids,
@@ -214,6 +232,7 @@ function genNewContextAndSave(parentContextUid: string|null, childContextUids: s
     } else {
         saveData(newContext, null, settings);
     }
+    return true;
 }
 
 function changeCurrentContext(newContext: ParsingContext|null) {
@@ -255,3 +274,4 @@ chrome.runtime.onMessage.addListener(listenForSaveMessage);
 chrome.runtime.onMessage.addListener(listenForChangeCurrentContext);
 chrome.runtime.onMessage.addListener(listenForChangeTemplate);
 chrome.runtime.onMessage.addListener(listenForSavePreviewData);
+chrome.runtime.onMessage.addListener(listenForClearPreviewData);

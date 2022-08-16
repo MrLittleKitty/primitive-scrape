@@ -1,17 +1,18 @@
 import React from "react";
-import {Box, SxProps, Theme, Typography} from "@mui/material";
+import {Box, IconButton, SxProps, Theme, Typography} from "@mui/material";
 import {CHANGE_CONTEXT_DIMENSIONS, HEADER_HEIGHT, SEPARATION} from "./PositionsAndDimensions";
 import {ParsedDataPreview} from "../parsing/ParsedDataPreview";
 import {DataGrid, GridColDef} from "@mui/x-data-grid";
 import {ParsedField} from "../parsing/ParsedField";
 import {ParsingTemplateMap} from "../parsing/ParsingTemplate";
-import {extractContextName} from "../parsing/ParsingContext";
+import ClearIcon from '@mui/icons-material/Clear';
 
 interface ScrapedDataPreviewComponentProps {
     sx: SxProps<Theme>,
     previewData: ParsedDataPreview,
     templates: ParsingTemplateMap,
 
+    clearPreviewData: (dataPreviewUid: string) => void,
     getDataCallback: (func: () => ParsedDataPreview) => void
 }
 
@@ -120,6 +121,10 @@ export default class ScrapedDataPreviewComponent extends React.Component<Scraped
                         textAlign: "center",
                         alignItems: "center"
                     }}>
+                        <IconButton onClick={() => this.props.clearPreviewData(this.state.data.previewUid)}>
+                            <ClearIcon/>
+                        </IconButton>
+
                         <Typography
                             sx={{
                                 color: "#404040"

@@ -11,6 +11,7 @@ export const TYPE_SAVE_CONTEXT = "parse-save-context"
 export const TYPE_CHANGE_CURRENT_CONTEXT = "change-current-context"
 export const TYPE_CHANGE_TEMPLATE = "change-template"
 export const TYPE_SAVE_PREVIEW_DATA = "save-preview-data"
+export const TYPE_CLEAR_PREVIEW_DATA = "clear-preview-data"
 
 export type MessageType =
     typeof TYPE_SCRAPE |
@@ -19,7 +20,8 @@ export type MessageType =
     typeof TYPE_SAVE_CONTEXT |
     typeof TYPE_CHANGE_CURRENT_CONTEXT |
     typeof TYPE_CHANGE_TEMPLATE |
-    typeof TYPE_SAVE_PREVIEW_DATA;
+    typeof TYPE_SAVE_PREVIEW_DATA |
+    typeof TYPE_CLEAR_PREVIEW_DATA;
 
 export interface Message {
     type: MessageType
@@ -62,4 +64,8 @@ export interface SaveContextMessage extends Message {
 export interface SavePreviewDataMessage extends Message {
     settings: ParseSettings,
     previewData: ParsedDataPreview
+}
+
+export interface ClearPreviewDataMessage extends Message {
+    previewUid: string,
 }

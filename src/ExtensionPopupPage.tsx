@@ -1,11 +1,12 @@
 import React from 'react';
 import {
     ChangeCurrentContextMessage,
-    ChangeTemplateMessage,
+    ChangeTemplateMessage, ClearPreviewDataMessage,
     SavePreviewDataMessage,
     ScrapeMessage,
     TYPE_CHANGE_CURRENT_CONTEXT,
     TYPE_CHANGE_TEMPLATE,
+    TYPE_CLEAR_PREVIEW_DATA,
     TYPE_SAVE_PREVIEW_DATA,
     TYPE_SCRAPE
 } from "./chrome/MessagePassing";
@@ -205,6 +206,13 @@ export default class ExtensionPopupPage extends React.Component<any, ExtensionPo
       });
   }
 
+  clearPreviewData = (previewUid: string) => {
+      chrome.runtime.sendMessage<ClearPreviewDataMessage>({
+          type: TYPE_CLEAR_PREVIEW_DATA,
+          previewUid: previewUid
+      });
+  }
+
   sendChangeContextMessage = (context: ParsingContext|null) => {
       console.log("Trying to change to", context);
       chrome.runtime.sendMessage<ChangeCurrentContextMessage>({
@@ -282,6 +290,7 @@ export default class ExtensionPopupPage extends React.Component<any, ExtensionPo
                     }}
                     previewData={previewData[0]}
                     templates={this.state.allTemplates.get()}
+                    clearPreviewData={this.clearPreviewData}
                     getDataCallback={(func) => {
                         this.setState({
                             getPreviewDataFunc: func
