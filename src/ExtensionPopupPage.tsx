@@ -228,6 +228,14 @@ export default class ExtensionPopupPage extends React.Component<any, ExtensionPo
       });
   }
 
+  openSettings = () => {
+      if (chrome.runtime.openOptionsPage) {
+          chrome.runtime.openOptionsPage();
+      } else {
+          window.open(chrome.runtime.getURL('options_page.html'));
+      }
+  }
+
   render() {
       const template = this.state.currentTemplate.get();
       // if(template == null || Object.values(this.state.validTemplates).length < 1 || Object.values(this.state.allTemplates.get()).length < 1) {
@@ -240,13 +248,7 @@ export default class ExtensionPopupPage extends React.Component<any, ExtensionPo
                   <ButtonBlockComponent
                       sx={{}}
                       value={null}
-                      onClick={(value) => {
-                          if (chrome.runtime.openOptionsPage) {
-                              chrome.runtime.openOptionsPage();
-                          } else {
-                              window.open(chrome.runtime.getURL('options_page.html'));
-                          }
-                      }}>
+                      onClick={this.openSettings}>
                       Open the options page
                   </ButtonBlockComponent>
               </Box>
@@ -305,6 +307,7 @@ export default class ExtensionPopupPage extends React.Component<any, ExtensionPo
               }}
               previewData={this.state.parseSettings.get().previewData}
               moveToContext={this.state.parseSettings.get().moveToContext}
+              settingsIconClicked={this.openSettings}
               previewDataChanged={(value) => {
                   const settings = this.state.parseSettings.get();
                   this.setState({

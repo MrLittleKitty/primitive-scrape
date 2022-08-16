@@ -1,12 +1,14 @@
 import React from "react";
-import {Box, FormControlLabel, FormGroup, Switch, SxProps, Theme, Typography} from "@mui/material";
+import {Box, FormControlLabel, FormGroup, IconButton, Switch, SxProps, Theme, Typography} from "@mui/material";
 import {HEADER_HEIGHT, SETTINGS_DIMENSIONS} from "./PositionsAndDimensions";
+import SettingsIcon from '@mui/icons-material/Settings';
 
 interface SettingsComponentProps {
     sx: SxProps<Theme>
     moveToContext: boolean,
     previewData: boolean,
 
+    settingsIconClicked: () => void,
     previewDataChanged: (value: boolean) => void
     moveToContextChanged: (value: boolean) => void
 }
@@ -47,6 +49,9 @@ export default class SettingsComponent extends React.Component<SettingsComponent
                             align={"center"}>
                             Settings
                         </Typography>
+                        <IconButton onClick={this.props.settingsIconClicked}>
+                            <SettingsIcon/>
+                        </IconButton>
                     </Box>
 
                     <FormGroup>

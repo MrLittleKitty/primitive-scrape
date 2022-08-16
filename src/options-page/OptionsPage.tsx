@@ -45,7 +45,7 @@ let BUILDING_TEMPLATE : ParsingTemplate = {
             name: "Name",
             nodeSelector: "body > div.title > h1",
             processorFunctionName: TEXT_EXTRACT_NAME,
-            processorFunctionArgument: "",
+            processorFunctionArgument: ".*?:(.+)",
         },
         {
             name: "Address",

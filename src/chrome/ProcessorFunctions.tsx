@@ -17,7 +17,27 @@ function extractText(element: Element) : string {
 
 function textExtractor(elements: Element[], argument: string) : string {
     if(elements.length === 1) {
-        return extractText(elements[0])
+        const rawText = extractText(elements[0])
+        console.log("Raw text and argument", rawText, argument);
+        // If there was a problem parsing the raw text then return empty string
+        if(rawText == null || rawText === '') {
+            return '';
+        }
+        // If there is no regex argument passed in then return whatever we parsed from the raw text
+        if(argument == null || argument === '') {
+            return rawText;
+        }
+
+        const regex = new RegExp(argument);
+        const match = rawText.match(regex);
+        // If there was no match then return raw text
+        if(!match) {
+            return rawText;
+        }
+
+        // If there was a match then our value is the first (and only) capture group
+        // Regex in javascript is 1 based for some reason :(
+        return match[1];
     }
     return ""
 }
