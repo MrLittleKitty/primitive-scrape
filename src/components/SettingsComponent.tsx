@@ -35,7 +35,7 @@ export default class SettingsComponent extends React.Component<SettingsComponent
                     marginRight: "10px"
                 }}>
                     <Box sx={{
-                        width: SETTINGS_DIMENSIONS.width,
+                        width: SETTINGS_DIMENSIONS.width-10,
                         height: HEADER_HEIGHT,
                         flex: 1,
                         display: "flex",
@@ -49,9 +49,17 @@ export default class SettingsComponent extends React.Component<SettingsComponent
                             align={"center"}>
                             Settings
                         </Typography>
-                        <IconButton onClick={this.props.settingsIconClicked}>
-                            <SettingsIcon/>
-                        </IconButton>
+
+                        <Box sx={{
+                            padding: 0,
+                            flex: 1,
+                            display: "flex",
+                            justifyContent: "end"
+                        }}>
+                            <IconButton onClick={this.props.settingsIconClicked}>
+                                <SettingsIcon fontSize="small"/>
+                            </IconButton>
+                        </Box>
                     </Box>
 
                     <FormGroup>

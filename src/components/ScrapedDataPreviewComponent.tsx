@@ -121,10 +121,6 @@ export default class ScrapedDataPreviewComponent extends React.Component<Scraped
                         textAlign: "center",
                         alignItems: "center"
                     }}>
-                        <IconButton onClick={() => this.props.clearPreviewData(this.state.data.previewUid)}>
-                            <ClearIcon/>
-                        </IconButton>
-
                         <Typography
                             sx={{
                                 color: "#404040"
@@ -132,6 +128,17 @@ export default class ScrapedDataPreviewComponent extends React.Component<Scraped
                             align={"center"}>
                             Preview Scraped Data
                         </Typography>
+
+                        <Box sx={{
+                            padding: 0,
+                            flex: 1,
+                            display: "flex",
+                            justifyContent: "end"
+                        }}>
+                            <IconButton onClick={() => this.props.clearPreviewData(this.state.data.previewUid)}>
+                                <ClearIcon fontSize="small"/>
+                            </IconButton>
+                        </Box>
                     </Box>
 
                     <Box sx={{
