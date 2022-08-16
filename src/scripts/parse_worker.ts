@@ -243,7 +243,7 @@ function changeCurrentContext(newContext: ParsingContext|null) {
     if(currentTemplate != null) {
         // If the current template is not in the map of valid templates (which it won't be without cycles which don't exist yet)
         //  Then we need to change the current template to be something from the valid templates map
-        if(!validTemplates[currentTemplate.name]) {
+        if(newContext == null || !validTemplates[currentTemplate.name]) {
             const newTemplate = Object.values(validTemplates).find((value) => value != null);
             CURRENT_TEMPLATE.set(newTemplate === undefined ? null : newTemplate);
         }
