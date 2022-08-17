@@ -344,7 +344,7 @@ export default class ExtensionPopupPage extends React.Component<any, ExtensionPo
                 ...TEMPLATE_POSITION,
             }}
             currentTemplate={template}
-            templates={this.state.validTemplates}
+            validTemplates={this.state.validTemplates}
             templateChangedFunc={this.sendChangeTemplateMessage}
           />
 

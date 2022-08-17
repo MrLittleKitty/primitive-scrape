@@ -41,7 +41,7 @@ export const CHANGE_CONTEXT_POSITION= {
 }
 
 export const TEMPLATE_DIMENSIONS : Dimensions = {
-    height: 100,
+    height: 300,
     width: CURRENT_CONTEXT_VIEWER_DIMENSIONS.width
 }
 
