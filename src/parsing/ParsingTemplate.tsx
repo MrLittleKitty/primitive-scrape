@@ -15,11 +15,18 @@ export type ParsingTemplateMap = {
 }
 
 export function genValidTemplatesForContext(context: ParsingContext|null, allTemplates: ParsingTemplateMap) : ParsingTemplateMap {
-    if(context === null || allTemplates === null || Object.values(allTemplates).length < 1) {
-        return allTemplates
+    if(allTemplates === null || Object.values(allTemplates).length < 1) {
+        return {}
     }
 
     let templateMap : ParsingTemplateMap = {};
+
+    if(context == null) {
+        Object.values(allTemplates)
+            .filter(template => template.parentTemplateKey == null || template.parentTemplateKey === '')
+            .forEach(template => templateMap[template.name] = template);
+        return templateMap;
+    }
 
     // This is the template for the current context
     const startingTemplate = allTemplates[context.templateName];
