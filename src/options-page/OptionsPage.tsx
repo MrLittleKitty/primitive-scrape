@@ -218,14 +218,19 @@ export default class OptionsPage extends React.Component<any, OptionsPageState> 
         this.state = {
             templateStore: newLocalStorage("templates", {}, (value) => (value == null || Object.keys(value).length < 1))
         }
+        const setState = this.setState.bind(this)
+
+        this.state.templateStore.load().then(value => setState({
+            templateStore: value
+        }))
     }
 
     render() {
 
         return (
             <Box sx={{
-                height: "100%",
-                width: "100%",
+                height: "600px",
+                width: "600px",
                 backgroundColor: "#F6F6F6",
             }}>
                 <Stack spacing={2}>

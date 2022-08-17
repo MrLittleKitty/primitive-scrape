@@ -9,6 +9,7 @@ interface SettingsComponentProps {
     moveToContext: boolean,
     previewData: boolean,
 
+    viewContextButtonClicked: () => void,
     downloadButtonClicked: () => void,
     settingsIconClicked: () => void,
     previewDataChanged: (value: boolean) => void
@@ -76,6 +77,14 @@ export default class SettingsComponent extends React.Component<SettingsComponent
                             onClick={(value) => this.props.downloadButtonClicked()}
                         >
                             Download Data
+                        </ButtonBlockComponent>
+
+                        <ButtonBlockComponent
+                            sx={{}}
+                            value={null}
+                            onClick={(value) => this.props.viewContextButtonClicked()}
+                        >
+                            View Context
                         </ButtonBlockComponent>
                     </Stack>
                 </Box>

@@ -118,41 +118,6 @@ export default class ExtensionPopupPage extends React.Component<any, ExtensionPo
       });
   }
 
-  // saveParsedData = (page: ParsedPage, context: ParsingContext | null) => {
-  //
-  //     if(this.state.moveToContext) {
-  //         //TODO---Move to the new context
-  //
-  //         //TODO--Maybe also add to a list of recent contexts for viewing later
-  //     }
-  // }
-  //
-  // processParsedData = (page: ParsedPage, context: ParsingContext | null, template: ParsingTemplate) => {
-  //     if(this.state.previewScrape) {
-  //         this.setState({
-  //             previewingData: {
-  //                 page: page,
-  //                 context: context,
-  //             }
-  //         })
-  //     } else {
-  //         //No data previewing, so we just save the data right away
-  //         this.saveParsedData(page, context)
-  //     }
-  // }
-  //
-  // listenForParseResult = (request: ParseSucceededMessage, sender: chrome.runtime.MessageSender, responseFunc: (response: any) => void) => {
-  //   console.log("Popup received message:", request)
-  //   if(request.type === TYPE_PARSE_SUCCEEDED) {
-  //       if(messageContext) {
-  //           this.processParsedData(request.result, messageContext.context, messageContext.template)
-  //       }
-  //       this.state.scrapeMessageContexts.delete(request.uid);
-  //   }
-  //   responseFunc({});
-  //   return true;
-  // }
-
   sendScrapeMessage = () => {
     const uid = uuidv4();
 
@@ -245,6 +210,15 @@ export default class ExtensionPopupPage extends React.Component<any, ExtensionPo
       });
   }
 
+  viewContext = (contex: ParsingContext|null) => {
+      chrome.windows.create({
+          url: chrome.runtime.getURL("context-page.html")+"?contextId="+(contex != null ? contex.uid : ""),
+          type: "popup",
+          width: 600,
+          height: 1000
+      });
+  }
+
   render() {
       const template = this.state.currentTemplate.get();
       // if(template == null || Object.values(this.state.validTemplates).length < 1 || Object.values(this.state.allTemplates.get()).length < 1) {
@@ -318,6 +292,7 @@ export default class ExtensionPopupPage extends React.Component<any, ExtensionPo
               moveToContext={this.state.parseSettings.get().moveToContext}
               settingsIconClicked={this.openSettings}
               downloadButtonClicked={this.downloadContexts}
+              viewContextButtonClicked={() => this.viewContext(this.state.currentContext.get())}
               previewDataChanged={(value) => {
                   const settings = this.state.parseSettings.get();
                   this.setState({

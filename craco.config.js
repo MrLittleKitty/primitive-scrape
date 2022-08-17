@@ -6,6 +6,12 @@ const rewireEntries = [
         entry: path.resolve(__dirname, './src/options-page/options_page.tsx'),
         template: path.resolve(__dirname, './public/options_page.html'),
         outPath: 'options_page.html',
+    },
+    {
+        name: 'context-page',
+        entry: path.resolve(__dirname, './src/context-page/context-page.tsx'),
+        template: path.resolve(__dirname, './public/context-page.html'),
+        outPath: 'context-page.html',
     }
 ];
 
