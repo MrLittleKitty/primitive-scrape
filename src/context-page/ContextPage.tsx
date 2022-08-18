@@ -1,9 +1,10 @@
 import React from 'react';
-import {Box, Stack, Typography} from "@mui/material";
+import {Box, Typography} from "@mui/material";
 import {newLocalStorage, StorageInterface} from "../chrome/ChromeStorage";
 import ButtonBlockComponent from "../components/ButtonBlockComponent";
 import {ContextMap, ParsingContext} from "../parsing/ParsingContext";
 import ContextDetailsComponent from "../components/ContextDetails";
+import {DeleteContextMessage, TYPE_DELETE_CONTEXT} from "../chrome/MessagePassing";
 
 
 interface ContextPageState {
@@ -57,6 +58,13 @@ export default class ContextPage extends React.Component<any, ContextPageState> 
         )
     }
 
+    sendDeleteMessage = (context: ParsingContext) => {
+        chrome.runtime.sendMessage<DeleteContextMessage>({
+            type: TYPE_DELETE_CONTEXT,
+            contextUid: context.uid
+        }, (response: any) => window.close());
+    }
+
     render() {
         //const blocks = Object.values(this.state.contextStore.get()).map(context => this.genButtonBlock(context));
         const context = this.state.viewingContext;
@@ -80,6 +88,8 @@ export default class ContextPage extends React.Component<any, ContextPageState> 
                    changeContextClick={(value) => this.setState({
                        viewingContext: value
                    })}
+                   deleteButtonEnabled={true}
+                   deleteButtonClicked={this.sendDeleteMessage}
                />
             </Box>
         );

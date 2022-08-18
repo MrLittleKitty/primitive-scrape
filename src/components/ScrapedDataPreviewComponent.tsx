@@ -6,6 +6,7 @@ import {DataGrid, GridColDef} from "@mui/x-data-grid";
 import {ParsedField} from "../parsing/ParsedField";
 import {ParsingTemplateMap} from "../parsing/ParsingTemplate";
 import ClearIcon from '@mui/icons-material/Clear';
+import {sendBasicNotification} from "../chrome/ChromeUtils";
 
 interface ScrapedDataPreviewComponentProps {
     sx: SxProps<Theme>,
@@ -63,12 +64,10 @@ export default class ScrapedDataPreviewComponent extends React.Component<Scraped
             // I guess it only makes sense to validate the new context name if the template exists?
             const extractedContextName = newRow.parsedData;
             if(!this.validateContextName(extractedContextName)) {
-                chrome.notifications.create("", {
-                    type: "basic",
-                    title: "Invalid Context Name",
-                    message: "A context name must be set for a scraped page. Please set field '"+template.fieldToExtractContextNameFrom+"' to a non-empty value.",
-                    iconUrl: "Icon-48.png"
-                });
+                sendBasicNotification(
+                    "Invalid Context Name",
+                    "A context name must be set for a scraped page. Please set field '"+template.fieldToExtractContextNameFrom+"' to a non-empty value."
+                );
                 return oldRow;
             }
         }

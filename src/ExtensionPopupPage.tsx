@@ -37,6 +37,7 @@ import {
 import {ParseSettings} from "./parsing/ParseSettings";
 import PaperButton from "./components/PaperButton";
 import ButtonBlockComponent from "./components/ButtonBlockComponent";
+import {sendBasicNotification} from "./chrome/ChromeUtils";
 
 interface ExtensionPopupPageState {
     contexts: ReadOnlyStorageInterface<ContextMap>
@@ -211,8 +212,13 @@ export default class ExtensionPopupPage extends React.Component<any, ExtensionPo
   }
 
   viewContext = (contex: ParsingContext|null) => {
+      if(contex == null) {
+        sendBasicNotification("No current context", "Current context must be set in order to view.");
+        return;
+      }
+
       chrome.windows.create({
-          url: chrome.runtime.getURL("context-page.html")+"?contextId="+(contex != null ? contex.uid : ""),
+          url: chrome.runtime.getURL("context-page.html")+"?contextId="+(contex.uid),
           type: "popup",
           width: 600,
           height: 1000

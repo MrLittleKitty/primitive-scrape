@@ -28,6 +28,9 @@ interface ContexContextDetailsComponentProps {
     viewingContext: ParsingContext,
     contexts: ContextMap
 
+    deleteButtonEnabled: boolean,
+    deleteButtonClicked?: (context: ParsingContext) => void
+
     changeContextClick: (context: ParsingContext) => void,
 }
 
@@ -66,7 +69,7 @@ export default class ContextDetailsComponent extends React.Component<ContexConte
         return (
             <Box sx={{
                 height: 1000,
-                width: 500,
+                width: 600,
             }}>
                 <Typography>
                     Context Name: {this.props.viewingContext.name}
@@ -77,18 +80,22 @@ export default class ContextDetailsComponent extends React.Component<ContexConte
                 <Typography>
                     Template Name: {this.props.viewingContext.templateName}
                 </Typography>
-                <Typography>
-                    Child Contexts:
-                </Typography>
-                <Box sx={{
-                    display: "flex"
-                }}>
-                    <Stack
-                       spacing={1}
-                    >
-                        {this.props.viewingContext.childContextsUids.map(uid => this.genButtonBlock(this.props.contexts[uid]))}
-                    </Stack>
-                </Box>
+                {this.props.viewingContext.childContextsUids.length > 0 &&
+                    <Box>
+                        <Typography>
+                            Child Contexts:
+                        </Typography>
+                        <Box sx={{
+                            display: "flex"
+                        }}>
+                            <Stack
+                               spacing={1}
+                            >
+                                {this.props.viewingContext.childContextsUids.map(uid => this.genButtonBlock(this.props.contexts[uid]))}
+                            </Stack>
+                        </Box>
+                    </Box>
+                }
 
                 {this.props.viewingContext.parentContextUid != null &&
                     <Box>
@@ -117,6 +124,15 @@ export default class ContextDetailsComponent extends React.Component<ContexConte
                         />
                     </Box>
                 </Box>
+                {this.props.deleteButtonEnabled &&
+                    <ButtonBlockComponent
+                        sx={{}}
+                        value={this.props.viewingContext}
+                        onClick={(value) => this.props.deleteButtonClicked ? this.props.deleteButtonClicked(value) : {}}
+                    >
+                        [DANGER] Delete this Context and all Children
+                    </ButtonBlockComponent>
+                }
             </Box>
         );
     }

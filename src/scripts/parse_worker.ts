@@ -1,6 +1,8 @@
 import {
     ChangeCurrentContextMessage,
-    ChangeTemplateMessage, ClearPreviewDataMessage,
+    ChangeTemplateMessage,
+    ClearPreviewDataMessage,
+    DeleteContextMessage,
     ParseMessage,
     ParseResponse,
     SaveContextMessage,
@@ -8,6 +10,7 @@ import {
     TYPE_CHANGE_CURRENT_CONTEXT,
     TYPE_CHANGE_TEMPLATE,
     TYPE_CLEAR_PREVIEW_DATA,
+    TYPE_DELETE_CONTEXT,
     TYPE_PARSE,
     TYPE_SAVE_CONTEXT,
     TYPE_SAVE_PREVIEW_DATA
@@ -193,6 +196,60 @@ function listenForClearPreviewData(request: ClearPreviewDataMessage, sender: chr
     return true;
 }
 
+function listenForDeleteContextMessage(request: DeleteContextMessage, sender: chrome.runtime.MessageSender, sendResponse: (response: any) => void) {
+    if (request.type === TYPE_DELETE_CONTEXT) {
+        deleteContextAndSubTree(request.contextUid);
+        sendResponse({})
+    }
+    return true;
+}
+
+function deleteContextAndSubTree(contextUid: string) {
+    let contexts = CONTEXT_MAP.get();
+    const rootContext = contexts[contextUid];
+    const parentContextId = rootContext.parentContextUid;
+
+    // Find the parent context and remove our ID from its child contexts array
+    if(parentContextId != null && contexts[parentContextId] != null) {
+        const parent = contexts[parentContextId];
+        parent.childContextsUids = parent.childContextsUids.filter(id => id !== rootContext.uid);
+        contexts[parent.uid] = parent;
+    }
+
+    // Find the uids of our entire subtree (children, children of children, etc.) and delete them all
+    const contextsToDelete = [contextUid, ...getAllChildUids(rootContext, contexts)];
+    for(let deleteTarget of contextsToDelete) {
+        delete contexts[deleteTarget];
+    }
+
+    CONTEXT_MAP.set(contexts);
+
+    const currentContext = CURRENT_CONTEXT.get();
+    if(currentContext != null && contextsToDelete.find(uid => uid === currentContext.uid) != null) {
+        if(parentContextId != null && contexts[parentContextId] != null) {
+            changeCurrentContext(contexts[parentContextId])
+        } else {
+            changeCurrentContext(null);
+        }
+    }
+}
+
+function getAllChildUids(context: ParsingContext, contextMap: ContextMap) : string[] {
+    if(context == null || context.childContextsUids == null || context.childContextsUids.length < 1) {
+        return []
+    }
+
+    let uids : string[] = [];
+    for(let childUid of context.childContextsUids) {
+        uids.push(childUid);
+        const childContext = contextMap[childUid];
+        if(childContext != null) {
+            uids = [...uids, ...getAllChildUids(childContext, contextMap)]
+        }
+    }
+    return uids;
+}
+
 function clearPreviewDataAndSave(previewDataUid: string) : void {
     let previewDataStorage = PREVIEW_DATA.get();
     PREVIEW_DATA.set(previewDataStorage.filter(data => data.previewUid !== previewDataUid))
@@ -272,3 +329,4 @@ chrome.runtime.onMessage.addListener(listenForChangeCurrentContext);
 chrome.runtime.onMessage.addListener(listenForChangeTemplate);
 chrome.runtime.onMessage.addListener(listenForSavePreviewData);
 chrome.runtime.onMessage.addListener(listenForClearPreviewData);
+chrome.runtime.onMessage.addListener(listenForDeleteContextMessage);
