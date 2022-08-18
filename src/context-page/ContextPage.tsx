@@ -29,12 +29,6 @@ export default class ContextPage extends React.Component<any, ContextPageState> 
             viewingContext: null,
         }
         this.state.contextStore.load().then(this.updateContextStoreAndViewingContext);
-        // window.addEventListener('load', (event) => {
-        //     const contextId = genContextIdFromQueryParams();
-        //     this.setState({
-        //         viewingContext: this.state.contextStore.get()[contextId]
-        //     });
-        // });
     }
 
     updateContextStoreAndViewingContext = (contextStore: StorageInterface<ContextMap>) => {

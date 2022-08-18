@@ -70,6 +70,37 @@ function extractUrlFromImageTag(elements: Element[], argument: string) : string 
 }
 
 /*
+    This extracts an enum value from the given text element.
+    You MUST provide an argument and it must be a comma separated string of enum values.
+    The return value of this function is one of those enum values or "" (the empty string).
+    If the text contains multiple of the enum values, the longest one will be returned.
+    Example:
+        text="Loft condo: monique lofts",
+        argument="condo,loft condo",
+        return value="loft condo" (because "loft condo" is longer than "condo")
+ */
+function extractEnumValue(elements: Element[], argument: string) : string {
+    const enumValues : string[] = argument.split(',');
+    const text = textExtractor(elements, "").toLowerCase();
+    let matches = [];
+    for(let val of enumValues) {
+        if(text.includes(val)) {
+            matches.push(val);
+        }
+    }
+    if(matches.length < 1) {
+        return "";
+    }
+    let longest = matches[0];
+    for(let i = 1; i < matches.length; i++) {
+        if(matches[i].length > longest.length) {
+            longest = matches[i];
+        }
+    }
+    return longest;
+}
+
+/*
     You MUST provide a regex as the second parameter for this search.
     Otherwise this will return the first text value it can find that isn't empty
  */
@@ -117,13 +148,15 @@ export const TEXT_EXTRACT_NAME = "extractText";
 export const IMAGE_EXTRACT_NAME = "extractImage";
 export const EXTRACT_FIRST_LINK_TEXT_NAME = "extractFirstLinkText";
 export const SEARCH_TEXT_EXTRACT_NAME = "searchTextExtractName";
+export const ENUM_VALUE_EXTRACT_NAME = "extractEnumValue";
 
 export type ProcessorFunction = (elements: Element[], argument: string) => string
 export type ProcessorFunctionName =
     typeof TEXT_EXTRACT_NAME |
     typeof IMAGE_EXTRACT_NAME |
     typeof EXTRACT_FIRST_LINK_TEXT_NAME |
-    typeof SEARCH_TEXT_EXTRACT_NAME;
+    typeof SEARCH_TEXT_EXTRACT_NAME |
+    typeof ENUM_VALUE_EXTRACT_NAME;
 
 const PROCESSOR_FUNCTIONS = new Map<ProcessorFunctionName,ProcessorFunction>()
 
@@ -132,6 +165,7 @@ PROCESSOR_FUNCTIONS.set(TEXT_EXTRACT_NAME, textExtractor)
 PROCESSOR_FUNCTIONS.set(IMAGE_EXTRACT_NAME, extractUrlFromImageTag)
 PROCESSOR_FUNCTIONS.set(EXTRACT_FIRST_LINK_TEXT_NAME, extractFirstLinkText)
 PROCESSOR_FUNCTIONS.set(SEARCH_TEXT_EXTRACT_NAME, searchTextExtractor)
+PROCESSOR_FUNCTIONS.set(ENUM_VALUE_EXTRACT_NAME, extractEnumValue)
 
 function processData(processorName: ProcessorFunctionName, argument: string, elements: Element[]) : string {
     const func = PROCESSOR_FUNCTIONS.get(processorName);

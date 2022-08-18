@@ -3,6 +3,7 @@ import {Box, Stack} from "@mui/material";
 import {newLocalStorage, StorageInterface} from "../chrome/ChromeStorage";
 import {ParsingTemplate, ParsingTemplateMap} from "../parsing/ParsingTemplate";
 import {
+    ENUM_VALUE_EXTRACT_NAME,
     EXTRACT_FIRST_LINK_TEXT_NAME,
     IMAGE_EXTRACT_NAME,
     SEARCH_TEXT_EXTRACT_NAME,
@@ -16,8 +17,9 @@ import ButtonBlockComponent from "../components/ButtonBlockComponent";
  */
 const RIGHT_OF_COLON_REGEX = ".*?:(.+)";
 const UL_SQUARE_FEET_REGEX = ".*?([\\d,]+)[ -]\\bsquare\\b[ -](?:feet|foot).*";
-const UL_BEDROOMS_REGEX = "";
-const UL_BATHROOMS_REGEX = "";
+const UL_BEDROOMS_REGEX = ".*?((?:[\\d.]+)|one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve)[ ]+(?:bedroom|bdrm)[s]?.*";
+const UL_BATHROOMS_REGEX = ".*?((?:[\\d.]+)|one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve)[ ]+(?:bathroom|bath)[s]?.*";
+const BUILDING_TYPE_ENUM_VALUES = "condo,house,townhouse,floating home,loft condo,loft home,custom home";
 
 let UL_BUILDING_TEMPLATE : ParsingTemplate = {
     parentTemplateKey: null,
@@ -36,6 +38,12 @@ let UL_BUILDING_TEMPLATE : ParsingTemplate = {
             nodeSelector: "body > div:nth-child(4) > div > div.building__detail > div.building__address",
             processorFunctionName: TEXT_EXTRACT_NAME,
             processorFunctionArgument: "",
+        },
+        {
+            name: "Type",
+            nodeSelector: "body > div.title > h1",
+            processorFunctionName: ENUM_VALUE_EXTRACT_NAME,
+            processorFunctionArgument: BUILDING_TYPE_ENUM_VALUES,
         },
         {
             name: "Floor Count",
@@ -85,15 +93,15 @@ let UL_UNIT_TEMPLATE : ParsingTemplate = {
         },
         {
             name: "Bedrooms",
-            nodeSelector: "",
-            processorFunctionName: TEXT_EXTRACT_NAME,
-            processorFunctionArgument: "",
+            nodeSelector: "body > article.post > div > div.post__content",
+            processorFunctionName: SEARCH_TEXT_EXTRACT_NAME,
+            processorFunctionArgument: UL_BEDROOMS_REGEX,
         },
         {
             name: "Bathrooms",
-            nodeSelector: "",
-            processorFunctionName: TEXT_EXTRACT_NAME,
-            processorFunctionArgument: "",
+            nodeSelector: "body > article.post > div > div.post__content",
+            processorFunctionName: SEARCH_TEXT_EXTRACT_NAME,
+            processorFunctionArgument: UL_BATHROOMS_REGEX,
         },
         {
             name: "Cover Image URL",
