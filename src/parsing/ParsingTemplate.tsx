@@ -1,4 +1,4 @@
-import {ParseFieldTarget} from "./ParsedField";
+import {ParsingFieldSet} from "./ParsedField";
 import {ParsingContext} from "./ParsingContext";
 
 export interface ParsingTemplate {
@@ -6,7 +6,8 @@ export interface ParsingTemplate {
     childTemplatesKey: string[]
 
     name: string,
-    parsableFields: ParseFieldTarget[],
+    parsingFieldSets: ParsingFieldSet[]
+    defaultParsingFieldSet: ParsingFieldSet,
     fieldToExtractContextNameFrom: string,
 }
 

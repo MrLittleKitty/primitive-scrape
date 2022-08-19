@@ -12,7 +12,8 @@
     "scripting",
     "unlimitedStorage",
     "notifications",
-    "downloads"
+    "downloads",
+    "tabs"
   ],
   "background": {
     "service_worker": "worker.js"

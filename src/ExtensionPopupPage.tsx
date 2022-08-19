@@ -38,6 +38,7 @@ import {ParseSettings} from "./parsing/ParseSettings";
 import PaperButton from "./components/PaperButton";
 import ButtonBlockComponent from "./components/ButtonBlockComponent";
 import {sendBasicNotification} from "./chrome/ChromeUtils";
+import {ParseFieldTarget} from "./parsing/ParsedField";
 
 interface ExtensionPopupPageState {
     contexts: ReadOnlyStorageInterface<ContextMap>
@@ -119,6 +120,16 @@ export default class ExtensionPopupPage extends React.Component<any, ExtensionPo
       });
   }
 
+  genParsingFields = (template: ParsingTemplate, url: string) : ParseFieldTarget[] => {
+      for(let set of template.parsingFieldSets) {
+          const regex = new RegExp(set.pageMatchingRegex);
+          if(url.match(regex)) {
+              return set.fields;
+          }
+      }
+      return template.defaultParsingFieldSet.fields;
+  }
+
   sendScrapeMessage = () => {
     const uid = uuidv4();
 
@@ -132,11 +143,13 @@ export default class ExtensionPopupPage extends React.Component<any, ExtensionPo
         template: template,
         context: this.state.currentContext.get(),
         settings: this.state.parseSettings.get(),
+        genFieldsFunc: this.genParsingFields
     }
 
     chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
       if(tabs[0].id != null) {
         const id = tabs[0].id;
+        const url = tabs[0].url;
         chrome.scripting.executeScript({
           target: {tabId: id, allFrames: false},
           files: ['content.js'],
@@ -146,7 +159,7 @@ export default class ExtensionPopupPage extends React.Component<any, ExtensionPo
               uid: uid,
               parentContextUid: messageContext.context == null ? null : messageContext.context.uid,
               template: messageContext.template,
-              parseFields: messageContext.template.parsableFields,
+              parseFields: messageContext.genFieldsFunc(messageContext.template, url == null ? "" : url),
               settings: messageContext.settings
           });
         });

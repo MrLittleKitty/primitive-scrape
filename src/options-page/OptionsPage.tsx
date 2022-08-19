@@ -10,6 +10,7 @@ import {
     TEXT_EXTRACT_NAME
 } from "../chrome/ProcessorFunctions";
 import ButtonBlockComponent from "../components/ButtonBlockComponent";
+import {ParseFieldTarget, ParsingFieldSet} from "../parsing/ParsedField";
 
 
 /*
@@ -17,16 +18,18 @@ import ButtonBlockComponent from "../components/ButtonBlockComponent";
  */
 const RIGHT_OF_COLON_REGEX = ".*?:(.+)";
 const UL_SQUARE_FEET_REGEX = ".*?([\\d,]+)[ -]\\bsquare\\b[ -](?:feet|foot).*";
-const UL_BEDROOMS_REGEX = ".*?((?:[\\d.]+)|one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve)[ ]+(?:bedroom|bdrm)[s]?.*";
-const UL_BATHROOMS_REGEX = ".*?((?:[\\d.]+)|one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve)[ ]+(?:bathroom|bath)[s]?.*";
+const UL_BEDROOMS_REGEX = ".*?((?:[\\d.]+)|one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve)[ -]+(?:bedroom|bdrm)[s]?.*";
+const UL_BATHROOMS_REGEX = ".*?((?:[\\d.]+)|one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve)[ -]+(?:bathroom|bath)[s]?.*";
 const BUILDING_TYPE_ENUM_VALUES = "condo,house,townhouse,floating home,loft condo,loft home,custom home";
 
-let UL_BUILDING_TEMPLATE : ParsingTemplate = {
-    parentTemplateKey: null,
-    childTemplatesKey: ["UL - Unit"],
+const URBAN_LIVING_URL_REGEX = "http[s]?:\\/\\/www.urbnlivn.com\\/.*"
+const STREET_EASY_URL_REGEX = "http[s]?:\\/\\/streeteasy.com\\/.*"
+const REDFIN_URL_REGEX = "http[s]?:\\/\\/www.redfin.com\\/.*"
+//
 
-    name: "UL - Building",
-    parsableFields: [
+const UL_BUILDING_SET :ParsingFieldSet = {
+    name: "Urban Living Building",
+    fields: [
         {
             name: "Name",
             nodeSelector: "body > div.title > h1",
@@ -64,15 +67,12 @@ let UL_BUILDING_TEMPLATE : ParsingTemplate = {
             processorFunctionArgument: "",
         }
     ],
-    fieldToExtractContextNameFrom: "Name"
+    pageMatchingRegex: URBAN_LIVING_URL_REGEX
 }
 
-let UL_UNIT_TEMPLATE : ParsingTemplate = {
-    parentTemplateKey: "UL - Building",
-    childTemplatesKey: ["UL - Reference"],
-
-    name: "UL - Unit",
-    parsableFields: [
+const UL_UNIT_SET :ParsingFieldSet = {
+    name: "Urban Living Unit",
+    fields: [
         {
             name: "Unit Number",
             nodeSelector: "body > article.post > div > div.post__content",
@@ -110,35 +110,43 @@ let UL_UNIT_TEMPLATE : ParsingTemplate = {
             processorFunctionArgument: "",
         }
     ],
-    fieldToExtractContextNameFrom: "Unit Number"
+    pageMatchingRegex: URBAN_LIVING_URL_REGEX,
 }
 
-let UL_REFERENCE_TEMPLATE : ParsingTemplate = {
-    parentTemplateKey: "UL - Unit",
-    childTemplatesKey: [],
-
-    name: "UL - Reference",
-    parsableFields: [],
-    fieldToExtractContextNameFrom: "Name"
-}
-
-let STREET_EASY_BUILDING_TEMPLATE : ParsingTemplate = {
-    parentTemplateKey: null,
-    childTemplatesKey: ["SE - Unit"],
-
-    name: "SE - Building",
-    parsableFields: [
-
+const UL_REFERENCE_SET :ParsingFieldSet = {
+    name: "Urban Living Reference",
+    fields: [
+        {
+            name: "Title",
+            nodeSelector: "body > article.post > div > h1",
+            processorFunctionName: TEXT_EXTRACT_NAME,
+            processorFunctionArgument: "",
+        },
+        {
+            name: "Description",
+            nodeSelector: "",
+            processorFunctionName: TEXT_EXTRACT_NAME,
+            processorFunctionArgument: "",
+        },
+        {
+            name: "Source Name",
+            nodeSelector: "body > header > div > div > div > a > span.logo__name",
+            processorFunctionName: TEXT_EXTRACT_NAME,
+            processorFunctionArgument: "",
+        },
+        {
+            name: "Image URL",
+            nodeSelector: "body > article.post > div > figure > div > img",
+            processorFunctionName: IMAGE_EXTRACT_NAME,
+            processorFunctionArgument: "",
+        },
     ],
-    fieldToExtractContextNameFrom: "Name"
+    pageMatchingRegex: URBAN_LIVING_URL_REGEX,
 }
 
-let STREET_EASY_UNIT_TEMPLATE : ParsingTemplate = {
-    parentTemplateKey: "SE - Building",
-    childTemplatesKey: ["SE - Reference"],
-
-    name: "SE - Unit",
-    parsableFields: [
+const SE_UNIT_SET :ParsingFieldSet = {
+    name: "Street Easy Unit",
+    fields: [
         {
             name: "Name",
             // This extract is actually for the building name, but on the unit page...its weird
@@ -154,65 +162,47 @@ let STREET_EASY_UNIT_TEMPLATE : ParsingTemplate = {
             processorFunctionArgument: "",
         },
     ],
-    fieldToExtractContextNameFrom: "Name"
+    pageMatchingRegex: STREET_EASY_URL_REGEX,
 }
 
-let STREET_EASY_REFERENCE_TEMPLATE : ParsingTemplate = {
-    parentTemplateKey: "SE - Unit",
-    childTemplatesKey: [],
 
-    name: "SE - Reference",
-    parsableFields: [
-
-    ],
-    fieldToExtractContextNameFrom: "Name"
-}
-
-let REDFIN_BUILDING_TEMPLATE : ParsingTemplate = {
+let BUILDING_TEMPLATE : ParsingTemplate = {
+    name: "Building",
     parentTemplateKey: null,
-    childTemplatesKey: ["Redfin - Unit"],
+    childTemplatesKey: ["Unit"],
 
-    name: "Redfin - Building",
-    parsableFields: [
+    parsingFieldSets: [UL_BUILDING_SET],
+    defaultParsingFieldSet: UL_BUILDING_SET,
 
-    ],
     fieldToExtractContextNameFrom: "Name"
 }
 
-let REDFIN_UNIT_TEMPLATE : ParsingTemplate = {
-    parentTemplateKey: "Redfin - Building",
-    childTemplatesKey: ["Redfin - Reference"],
+let UNIT_TEMPLATE : ParsingTemplate = {
+    name: "Unit",
+    parentTemplateKey: "Building",
+    childTemplatesKey: ["Reference"],
 
-    name: "Redfin - Unit",
-    parsableFields: [
+    parsingFieldSets: [UL_UNIT_SET],
+    defaultParsingFieldSet: UL_UNIT_SET,
 
-    ],
-    fieldToExtractContextNameFrom: "Name"
+    fieldToExtractContextNameFrom: "Unit Number"
 }
 
-let REDFIN_REFERENCE_TEMPLATE : ParsingTemplate = {
-    parentTemplateKey: "Redfin - Unit",
+let REFERENCE_TEMPLATE : ParsingTemplate = {
+    name: "Reference",
+    parentTemplateKey: "Unit",
     childTemplatesKey: [],
 
-    name: "Redfin - Reference",
-    parsableFields: [
+    parsingFieldSets: [UL_REFERENCE_SET],
+    defaultParsingFieldSet: UL_REFERENCE_SET,
 
-    ],
-    fieldToExtractContextNameFrom: "Name"
+    fieldToExtractContextNameFrom: "Source Name"
 }
 
 export const DEFAULT_BUILDING_EXPLORER_TEMPLATE_MAP : ParsingTemplateMap = {
-    [UL_BUILDING_TEMPLATE.name] : UL_BUILDING_TEMPLATE,
-    [STREET_EASY_BUILDING_TEMPLATE.name] : STREET_EASY_BUILDING_TEMPLATE,
-    [REDFIN_BUILDING_TEMPLATE.name] : REDFIN_BUILDING_TEMPLATE,
-
-    [UL_UNIT_TEMPLATE.name] : UL_UNIT_TEMPLATE,
-    [STREET_EASY_UNIT_TEMPLATE.name] : STREET_EASY_UNIT_TEMPLATE,
-    [REDFIN_UNIT_TEMPLATE.name] : REDFIN_UNIT_TEMPLATE,
-
-    [UL_REFERENCE_TEMPLATE.name] : UL_REFERENCE_TEMPLATE,
-    [STREET_EASY_REFERENCE_TEMPLATE.name] : STREET_EASY_REFERENCE_TEMPLATE,
-    [REDFIN_REFERENCE_TEMPLATE.name] : REDFIN_REFERENCE_TEMPLATE,
+    [BUILDING_TEMPLATE.name] : BUILDING_TEMPLATE,
+    [UNIT_TEMPLATE.name] : UNIT_TEMPLATE,
+    [REFERENCE_TEMPLATE.name] : REFERENCE_TEMPLATE,
 }
 
 interface OptionsPageState {
@@ -248,7 +238,7 @@ export default class OptionsPage extends React.Component<any, OptionsPageState> 
                         onClick={(value) => {
                             this.state.templateStore.set(DEFAULT_BUILDING_EXPLORER_TEMPLATE_MAP);
                         }}>
-                        Load Default StreetEasy Templates
+                        Load Default Templates
                     </ButtonBlockComponent>
 
                     <ButtonBlockComponent

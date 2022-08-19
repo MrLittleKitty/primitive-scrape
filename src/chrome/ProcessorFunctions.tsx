@@ -8,14 +8,29 @@ function _isElement(el: any)  : el is Element {
     return 'attrs' in el && 'childNodes' in el;
 }
 
-function extractText(element: Element) : string {
-    const childNode = element?.childNodes[0]
-    if (childNode && _isTextNode(childNode)) {
-        const val = childNode.value.trim();
+function _textExtract(element: any) : string {
+    if (element && _isTextNode(element)) {
+        const val = element.value.trim();
         if(val != null) {
             return val.trim();
         }
     }
+    return "";
+}
+
+function extractText(element: Element) : string {
+    const elementText = _textExtract(element);
+    if(elementText != null && elementText !== '') {
+        return elementText;
+    }
+
+    if('childNodes' in element) {
+        const childNodes = element.childNodes;
+        if(childNodes != null && childNodes.length === 1) {
+            return _textExtract(childNodes[0]);
+        }
+    }
+
     return ""
 }
 
@@ -30,6 +45,7 @@ function regexExtract(rawText: string, regex: string, returnEmptyIfNoMatch: bool
 
     const regexObject = new RegExp(regex);
     const match = rawText.match(regexObject);
+
     // If there was no match then return raw text
     if(!match) {
         if(returnEmptyIfNoMatch) {
@@ -46,7 +62,6 @@ function regexExtract(rawText: string, regex: string, returnEmptyIfNoMatch: bool
 function textExtractor(elements: Element[], argument: string, returnEmptyIfNoMatch: boolean = false) : string {
     if(elements.length === 1) {
         const rawText = extractText(elements[0])
-        console.log("Raw text and argument", rawText, argument);
         // If there was a problem parsing the raw text then return empty string
         return regexExtract(rawText, argument, returnEmptyIfNoMatch);
     }
@@ -105,6 +120,10 @@ function extractEnumValue(elements: Element[], argument: string) : string {
     Otherwise this will return the first text value it can find that isn't empty
  */
 function searchTextExtractor(elements: Element[], regex: string) : string {
+    if(regex === '.*?((?:[\\d.]+)|one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve)[ -]+(?:bedroom|bdrm)[s]?.*') {
+        console.log("Searching tree", elements);
+    }
+
     for(let el of elements) {
         // Try to see if we can extract any of the text from the value itself
         const extractedValue = textExtractor([el], regex, true);
@@ -114,10 +133,16 @@ function searchTextExtractor(elements: Element[], regex: string) : string {
 
         // Ugh recursion. We hate to see it, but in this case its pretty good for traversing DOM tree
         // We are going to recurse through all child values and check them against the regex
-        const childElements = el.childNodes.filter(node => _isElement(node)).map(node => node as Element);
-        const extractedChildValue = searchTextExtractor(childElements, regex);
-        if(extractedChildValue != null && extractedChildValue !== '') {
-            return extractedChildValue;
+
+        if('childNodes' in el) {
+            const childNodes = el.childNodes;
+            if(childNodes != null) {
+                const childElements = childNodes.map(node => node as Element);
+                const extractedChildValue = searchTextExtractor(childElements, regex);
+                if (extractedChildValue != null && extractedChildValue !== '') {
+                    return extractedChildValue;
+                }
+            }
         }
     }
     return "";
@@ -128,17 +153,24 @@ function extractFirstLinkText(elements: Element[], argument: string) : string {
     // Go through all elements looking for the first element that has an href attribute
     for(let el of elements) {
         // Check for the "href" attribute and extract the text value if we find it
-        for(let attr of el.attrs) {
-            if(attr.name === 'href') {
-                return textExtractor([el], argument, true);
+        if('attrs' in el) {
+            for (let attr of el.attrs) {
+                if (attr.name === 'href') {
+                    return textExtractor([el], argument, true);
+                }
             }
         }
 
         // Ugh recursion. We hate to see it, but in this case its pretty good for traversing DOM tree
-        const childElements = el.childNodes.filter(node => _isElement(node)).map(node => node as Element);
-        const extractedChildValue = extractFirstLinkText(childElements, argument);
-        if(extractedChildValue != null && extractedChildValue !== '') {
-            return extractedChildValue;
+        if('childNodes' in el) {
+            const childNodes = el.childNodes;
+            if (childNodes != null) {
+                const childElements = el.childNodes.map(node => node as Element);
+                const extractedChildValue = extractFirstLinkText(childElements, argument);
+                if (extractedChildValue != null && extractedChildValue !== '') {
+                    return extractedChildValue;
+                }
+            }
         }
     }
     return "";
