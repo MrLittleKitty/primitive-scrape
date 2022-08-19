@@ -34,7 +34,7 @@ import {
     ReadOnlyStorageInterface,
     StorageInterface
 } from "./chrome/ChromeStorage";
-import {ParseSettings} from "./parsing/ParseSettings";
+import {DEFAULT_SETTINGS, ParseSettings} from "./parsing/ParseSettings";
 import PaperButton from "./components/PaperButton";
 import ButtonBlockComponent from "./components/ButtonBlockComponent";
 import {sendBasicNotification} from "./chrome/ChromeUtils";
@@ -93,11 +93,7 @@ export default class ExtensionPopupPage extends React.Component<any, ExtensionPo
         }),(value) => (value == null || value.length < 1)),
         getPreviewDataFunc: null,
 
-        parseSettings: newLocalStorage("parseSettings", {
-            previewData: false,
-            moveToContext: true,
-            showSettingsMenu: false,
-        }),
+        parseSettings: newLocalStorage("parseSettings", DEFAULT_SETTINGS),
 
         validTemplates: {},
     }
@@ -258,6 +254,7 @@ export default class ExtensionPopupPage extends React.Component<any, ExtensionPo
                 }}
                 previewData={this.state.parseSettings.get().previewData}
                 moveToContext={this.state.parseSettings.get().moveToContext}
+                autoContextSelect={this.state.parseSettings.get().autoContextSelect}
                 iconClicked={() => this.switchMenu(false)}
                 downloadButtonClicked={this.downloadContexts}
                 viewContextButtonClicked={() => this.viewContext(this.state.currentContext.get())}
@@ -271,6 +268,13 @@ export default class ExtensionPopupPage extends React.Component<any, ExtensionPo
                 moveToContextChanged={(value) => {
                     const settings = this.state.parseSettings.get();
                     settings.moveToContext = value;
+                    this.setState({
+                        parseSettings: this.state.parseSettings.update(settings)
+                    });
+                }}
+                autoContextSelectChanged={(value) => {
+                    const settings = this.state.parseSettings.get();
+                    settings.autoContextSelect = value;
                     this.setState({
                         parseSettings: this.state.parseSettings.update(settings)
                     });

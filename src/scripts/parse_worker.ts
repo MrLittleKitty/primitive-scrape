@@ -27,9 +27,10 @@ import {
     StorageInterface
 } from "../chrome/ChromeStorage";
 import {ContextMap, extractContextName, ParsingContext} from "../parsing/ParsingContext";
-import {ParseSettings} from "../parsing/ParseSettings";
+import {DEFAULT_SETTINGS, ParseSettings} from "../parsing/ParseSettings";
 import {genValidTemplatesForContext, ParsingTemplate, ParsingTemplateMap} from "../parsing/ParsingTemplate";
 import {ParsedDataPreview} from "../parsing/ParsedDataPreview";
+import TabActiveInfo = chrome.tabs.TabActiveInfo;
 
 let CONTEXT_MAP : StorageInterface<ContextMap> = newLocalStorage("contextStorage", {}, (value) => (value == null || Object.keys(value).length < 1))
 let CURRENT_CONTEXT : StorageInterface<ParsingContext|null> = newLocalStorage("currentContext", null);
@@ -51,6 +52,9 @@ let TEMPLATE_MAP : ReadOnlyStorageInterface<ParsingTemplateMap> = newReadOnlyLoc
 let CURRENT_TEMPLATE : StorageInterface<ParsingTemplate|null> = newLocalStorage("currentTemplate", null);
 let PREVIEW_DATA : StorageInterface<ParsedDataPreview[]> = newLocalStorage("previewingData", [], (value) => (value == null || value.length < 1));
 
+let SETTINGS : ReadOnlyStorageInterface<ParseSettings> = newReadOnlyLocalStorage("parseSettings", DEFAULT_SETTINGS, (value) => {
+    SETTINGS = value;
+}, (value) => (value == null || Object.keys(value).length < 1));
 
 CONTEXT_MAP.load().then((value) => {
     CONTEXT_MAP = value;
@@ -67,6 +71,9 @@ CURRENT_TEMPLATE.load().then((value) => {
 PREVIEW_DATA.load().then((value) => {
     PREVIEW_DATA = value;
 });
+SETTINGS.load().then((value) => {
+    SETTINGS = value;
+})
 
 function parseBody(body: string, parseFields: ParseFieldTarget[]) : ParsedField[] {
     const returnVal : ParsedField[] = []
@@ -204,6 +211,24 @@ function listenForDeleteContextMessage(request: DeleteContextMessage, sender: ch
     return true;
 }
 
+function listenForTabChanged(activeInfo: TabActiveInfo) {
+    console.log("Tab event fired")
+    if(SETTINGS.get().autoContextSelect) {
+        chrome.tabs.get(activeInfo.tabId).then(tab => {
+            const url = tab.url;
+            const contexts = CONTEXT_MAP.get();
+            const foundContext = Object.values(contexts).find(context => context.page.url === url);
+            if (foundContext != null) {
+                //We can change the context if the current context is null or not equal to the found one
+                const currentContext = CURRENT_CONTEXT.get();
+                if (currentContext == null || currentContext.uid !== foundContext.uid) {
+                    changeCurrentContext(foundContext);
+                }
+            }
+        });
+    }
+}
+
 function deleteContextAndSubTree(contextUid: string) {
     let contexts = CONTEXT_MAP.get();
     const rootContext = contexts[contextUid];
@@ -330,3 +355,4 @@ chrome.runtime.onMessage.addListener(listenForChangeTemplate);
 chrome.runtime.onMessage.addListener(listenForSavePreviewData);
 chrome.runtime.onMessage.addListener(listenForClearPreviewData);
 chrome.runtime.onMessage.addListener(listenForDeleteContextMessage);
+chrome.tabs.onActivated.addListener(listenForTabChanged);

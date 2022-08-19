@@ -6,14 +6,19 @@ import ButtonBlockComponent from "./ButtonBlockComponent";
 
 interface SettingsComponentProps {
     sx: SxProps<Theme>
+
     moveToContext: boolean,
     previewData: boolean,
+    autoContextSelect: boolean,
+
+    iconClicked: () => void,
+
+    previewDataChanged: (value: boolean) => void
+    moveToContextChanged: (value: boolean) => void
+    autoContextSelectChanged: (value: boolean) => void
 
     viewContextButtonClicked: () => void,
     downloadButtonClicked: () => void,
-    iconClicked: () => void,
-    previewDataChanged: (value: boolean) => void
-    moveToContextChanged: (value: boolean) => void
 }
 
 interface SettingsComponentState {
@@ -69,6 +74,7 @@ export default class SettingsComponent extends React.Component<SettingsComponent
                         <FormGroup>
                             <FormControlLabel control={<Switch checked={this.props.previewData} onChange={(event) => this.props.previewDataChanged(event.target.checked)}/>} label="Preview Data" />
                             <FormControlLabel control={<Switch checked={this.props.moveToContext} onChange={(event) => this.props.moveToContextChanged(event.target.checked)}/>} label="Move to Context" />
+                            <FormControlLabel control={<Switch checked={this.props.autoContextSelect} onChange={(event) => this.props.autoContextSelectChanged(event.target.checked)}/>} label="Auto Select Context" />
                         </FormGroup>
 
                         <ButtonBlockComponent
