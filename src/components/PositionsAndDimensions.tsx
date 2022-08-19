@@ -17,7 +17,7 @@ export interface Dimensions {
 
 export const CHANGE_CONTEXT_DIMENSIONS : Dimensions = {
     height: USABLE_HEIGHT,
-    width: 450
+    width: 420
 }
 
 export const CURRENT_CONTEXT_VIEWER_POSITION = {
@@ -41,23 +41,22 @@ export const CHANGE_CONTEXT_POSITION= {
 }
 
 export const TEMPLATE_DIMENSIONS : Dimensions = {
-    height: 300,
+    height: USABLE_HEIGHT - MAIN_BUTTON_DIMENSIONS.height - SEPARATION,
     width: CURRENT_CONTEXT_VIEWER_DIMENSIONS.width
 }
 
 export const SETTINGS_DIMENSIONS : Dimensions = {
-    height: USABLE_HEIGHT - TEMPLATE_DIMENSIONS.height - MAIN_BUTTON_DIMENSIONS.height - (SEPARATION*2),
+    height: TEMPLATE_DIMENSIONS.height,
     width: CURRENT_CONTEXT_VIEWER_DIMENSIONS.width
 }
 
 export const SETTINGS_POSITION = {
-    top: PADDING + TEMPLATE_DIMENSIONS.height + SEPARATION,
+    ...TOP_SEPARATION,
     left: CHANGE_CONTEXT_POSITION.left + CHANGE_CONTEXT_DIMENSIONS.width + SEPARATION
 }
 
 export const TEMPLATE_POSITION = {
-    ...TOP_SEPARATION,
-    left: SETTINGS_POSITION.left
+    ...SETTINGS_POSITION
 }
 
 export const MAIN_BUTTON_POSITION = {

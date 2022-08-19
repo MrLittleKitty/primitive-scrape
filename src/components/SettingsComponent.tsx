@@ -1,7 +1,7 @@
 import React from "react";
 import {Box, FormControlLabel, FormGroup, IconButton, Stack, Switch, SxProps, Theme, Typography} from "@mui/material";
 import {HEADER_HEIGHT, SETTINGS_DIMENSIONS} from "./PositionsAndDimensions";
-import SettingsIcon from '@mui/icons-material/Settings';
+import FeedIcon from '@mui/icons-material/Feed';
 import ButtonBlockComponent from "./ButtonBlockComponent";
 
 interface SettingsComponentProps {
@@ -11,7 +11,7 @@ interface SettingsComponentProps {
 
     viewContextButtonClicked: () => void,
     downloadButtonClicked: () => void,
-    settingsIconClicked: () => void,
+    iconClicked: () => void,
     previewDataChanged: (value: boolean) => void
     moveToContextChanged: (value: boolean) => void
 }
@@ -59,8 +59,8 @@ export default class SettingsComponent extends React.Component<SettingsComponent
                             display: "flex",
                             justifyContent: "end"
                         }}>
-                            <IconButton onClick={this.props.settingsIconClicked}>
-                                <SettingsIcon fontSize="small"/>
+                            <IconButton onClick={this.props.iconClicked}>
+                                <FeedIcon fontSize="small"/>
                             </IconButton>
                         </Box>
                     </Box>

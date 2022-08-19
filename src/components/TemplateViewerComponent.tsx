@@ -1,6 +1,6 @@
 import React from "react";
 import {
-    Box, Divider,
+    Box, Divider, IconButton,
     MenuItem,
     Stack,
     SxProps,
@@ -10,6 +10,7 @@ import {
 import {CURRENT_CONTEXT_VIEWER_DIMENSIONS, HEADER_HEIGHT, TEMPLATE_DIMENSIONS} from "./PositionsAndDimensions";
 import {ParsingTemplate, ParsingTemplateMap} from "../parsing/ParsingTemplate";
 import ButtonBlockComponent from "./ButtonBlockComponent";
+import SettingsIcon from '@mui/icons-material/Settings';
 
 function mapToMenuItem(template: ParsingTemplate) {
     return (
@@ -31,6 +32,7 @@ interface TemplateViewerComponentProps {
     currentTemplate: ParsingTemplate,
     validTemplates: ParsingTemplateMap,
 
+    iconClicked: () => void,
     templateChangedFunc: (selectedTemplate: ParsingTemplate) => void
 }
 
@@ -82,7 +84,7 @@ export default class TemplateViewerComponent extends React.Component<TemplateVie
                     marginRight: "10px"
                 }}>
                     <Box sx={{
-                        width: TEMPLATE_DIMENSIONS.width,
+                        width: TEMPLATE_DIMENSIONS.width-10,
                         height: HEADER_HEIGHT,
                         display: "flex",
                         textAlign: "center",
@@ -95,6 +97,17 @@ export default class TemplateViewerComponent extends React.Component<TemplateVie
                             align={"center"}>
                             Current Template
                         </Typography>
+
+                        <Box sx={{
+                            padding: 0,
+                            flex: 1,
+                            display: "flex",
+                            justifyContent: "end"
+                        }}>
+                            <IconButton onClick={this.props.iconClicked}>
+                                <SettingsIcon fontSize="small"/>
+                            </IconButton>
+                        </Box>
                     </Box>
 
                     <Box sx={{

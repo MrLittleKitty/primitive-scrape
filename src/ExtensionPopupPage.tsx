@@ -95,7 +95,8 @@ export default class ExtensionPopupPage extends React.Component<any, ExtensionPo
 
         parseSettings: newLocalStorage("parseSettings", {
             previewData: false,
-            moveToContext: true
+            moveToContext: true,
+            showSettingsMenu: false,
         }),
 
         validTemplates: {},
@@ -207,12 +208,21 @@ export default class ExtensionPopupPage extends React.Component<any, ExtensionPo
       });
   }
 
-  openSettings = () => {
+  openSettingsWindow = () => {
       if (chrome.runtime.openOptionsPage) {
           chrome.runtime.openOptionsPage();
       } else {
           window.open(chrome.runtime.getURL('options_page.html'));
       }
+  }
+
+  switchMenu = (showSettings: boolean) => {
+      const settings = this.state.parseSettings.get();
+      settings.showSettingsMenu = showSettings;
+
+      this.setState({
+          parseSettings: this.state.parseSettings.update(settings)
+      });
   }
 
   downloadContexts = () => {
@@ -238,6 +248,51 @@ export default class ExtensionPopupPage extends React.Component<any, ExtensionPo
       });
   }
 
+  _genSettingsOrTemplateComponent = (showSettings: boolean, template: ParsingTemplate) : JSX.Element => {
+    if(showSettings) {
+        return (
+            <SettingsComponent
+                sx={{
+                    position: "absolute",
+                    ...SETTINGS_POSITION
+                }}
+                previewData={this.state.parseSettings.get().previewData}
+                moveToContext={this.state.parseSettings.get().moveToContext}
+                iconClicked={() => this.switchMenu(false)}
+                downloadButtonClicked={this.downloadContexts}
+                viewContextButtonClicked={() => this.viewContext(this.state.currentContext.get())}
+                previewDataChanged={(value) => {
+                    const settings = this.state.parseSettings.get();
+                    settings.previewData = value;
+                    this.setState({
+                        parseSettings: this.state.parseSettings.update(settings)
+                    });
+                }}
+                moveToContextChanged={(value) => {
+                    const settings = this.state.parseSettings.get();
+                    settings.moveToContext = value;
+                    this.setState({
+                        parseSettings: this.state.parseSettings.update(settings)
+                    });
+                }}
+            />
+        );
+    }
+
+    return (
+        <TemplateViewerComponent
+            sx={{
+                position: "absolute",
+                ...TEMPLATE_POSITION,
+            }}
+            currentTemplate={template}
+            iconClicked={() => this.switchMenu(true)}
+            validTemplates={this.state.validTemplates}
+            templateChangedFunc={this.sendChangeTemplateMessage}
+        />
+    );
+  }
+
   render() {
       const template = this.state.currentTemplate.get();
       // if(template == null || Object.values(this.state.validTemplates).length < 1 || Object.values(this.state.allTemplates.get()).length < 1) {
@@ -250,7 +305,7 @@ export default class ExtensionPopupPage extends React.Component<any, ExtensionPo
                   <ButtonBlockComponent
                       sx={{}}
                       value={null}
-                      onClick={this.openSettings}>
+                      onClick={this.openSettingsWindow}>
                       Open the options page
                   </ButtonBlockComponent>
               </Box>
@@ -302,45 +357,8 @@ export default class ExtensionPopupPage extends React.Component<any, ExtensionPo
                     }}
                 />
             }
-          <SettingsComponent
-              sx={{
-                position: "absolute",
-                ...SETTINGS_POSITION
-              }}
-              previewData={this.state.parseSettings.get().previewData}
-              moveToContext={this.state.parseSettings.get().moveToContext}
-              settingsIconClicked={this.openSettings}
-              downloadButtonClicked={this.downloadContexts}
-              viewContextButtonClicked={() => this.viewContext(this.state.currentContext.get())}
-              previewDataChanged={(value) => {
-                  const settings = this.state.parseSettings.get();
-                  this.setState({
-                      parseSettings: this.state.parseSettings.update({
-                          previewData: value,
-                          moveToContext: settings.moveToContext
-                      })
-                  });
-              }}
-              moveToContextChanged={(value) => {
-                  const settings = this.state.parseSettings.get();
-                  this.setState({
-                      parseSettings: this.state.parseSettings.update({
-                          previewData: settings.previewData,
-                          moveToContext: value
-                      })
-                  });
-              }}
-          />
 
-          <TemplateViewerComponent
-            sx={{
-                position: "absolute",
-                ...TEMPLATE_POSITION,
-            }}
-            currentTemplate={template}
-            validTemplates={this.state.validTemplates}
-            templateChangedFunc={this.sendChangeTemplateMessage}
-          />
+          {this._genSettingsOrTemplateComponent(this.state.parseSettings.get().showSettingsMenu, template)}
 
           <PaperButton
               sx={{
