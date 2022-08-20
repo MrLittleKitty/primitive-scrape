@@ -244,7 +244,7 @@ export default class ExtensionPopupPage extends React.Component<any, ExtensionPo
       });
   }
 
-  _genSettingsOrTemplateComponent = (showSettings: boolean, template: ParsingTemplate) : JSX.Element => {
+  _genSettingsOrTemplateComponent = (showSettings: boolean, template: ParsingTemplate|null) : JSX.Element => {
     if(showSettings) {
         return (
             <SettingsComponent
@@ -298,9 +298,9 @@ export default class ExtensionPopupPage extends React.Component<any, ExtensionPo
   }
 
   render() {
-      const template = this.state.currentTemplate.get();
+      //const template = this.state.currentTemplate.get();
       // if(template == null || Object.values(this.state.validTemplates).length < 1 || Object.values(this.state.allTemplates.get()).length < 1) {
-      if(template == null) {
+      if(Object.values(this.state.allTemplates.get()).length < 1) {
           return (
               <Box>
                   <Typography>
@@ -313,7 +313,7 @@ export default class ExtensionPopupPage extends React.Component<any, ExtensionPo
                       Open the options page
                   </ButtonBlockComponent>
               </Box>
-          )
+          );
       }
 
       const previewData = this.state.previewingData.get();
@@ -362,23 +362,25 @@ export default class ExtensionPopupPage extends React.Component<any, ExtensionPo
                 />
             }
 
-          {this._genSettingsOrTemplateComponent(this.state.parseSettings.get().showSettingsMenu, template)}
+          {this._genSettingsOrTemplateComponent(this.state.parseSettings.get().showSettingsMenu, this.state.currentTemplate.get())}
 
-          <PaperButton
-              sx={{
-                  position: "absolute",
-                  ...MAIN_BUTTON_POSITION,
-                  ...MAIN_BUTTON_DIMENSIONS,
-              }}
-              hoverElevation={1}
-              color={"#40385a"}
-              hoverColor={"#524b6b"}
-              clickColor={"#40385a"}
-              textColor={"#f6f6f6"}
-              onClick={previewData.length > 0 ? this.savePreviewedData : this.sendScrapeMessage}
-          >
-              {previewData.length > 0 ? "Save Data" : "Scrape Page"}
-          </PaperButton>
+            {this.state.currentTemplate.get() != null &&
+                <PaperButton
+                    sx={{
+                        position: "absolute",
+                        ...MAIN_BUTTON_POSITION,
+                        ...MAIN_BUTTON_DIMENSIONS,
+                    }}
+                    hoverElevation={1}
+                    color={"#40385a"}
+                    hoverColor={"#524b6b"}
+                    clickColor={"#40385a"}
+                    textColor={"#f6f6f6"}
+                    onClick={previewData.length > 0 ? this.savePreviewedData : this.sendScrapeMessage}
+                >
+                    {previewData.length > 0 ? "Save Data" : "Scrape Page"}
+                </PaperButton>
+            }
         </Box>
     );
   }

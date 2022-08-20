@@ -120,10 +120,6 @@ function extractEnumValue(elements: Element[], argument: string) : string {
     Otherwise this will return the first text value it can find that isn't empty
  */
 function searchTextExtractor(elements: Element[], regex: string) : string {
-    if(regex === '.*?((?:[\\d.]+)|one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve)[ -]+(?:bedroom|bdrm)[s]?.*') {
-        console.log("Searching tree", elements);
-    }
-
     for(let el of elements) {
         // Try to see if we can extract any of the text from the value itself
         const extractedValue = textExtractor([el], regex, true);

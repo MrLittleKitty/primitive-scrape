@@ -31,6 +31,7 @@ import {DEFAULT_SETTINGS, ParseSettings} from "../parsing/ParseSettings";
 import {genValidTemplatesForContext, ParsingTemplate, ParsingTemplateMap} from "../parsing/ParsingTemplate";
 import {ParsedDataPreview} from "../parsing/ParsedDataPreview";
 import TabActiveInfo = chrome.tabs.TabActiveInfo;
+import {sendBasicNotification} from "../chrome/ChromeUtils";
 
 let CONTEXT_MAP : StorageInterface<ContextMap> = newLocalStorage("contextStorage", {}, (value) => (value == null || Object.keys(value).length < 1))
 let CURRENT_CONTEXT : StorageInterface<ParsingContext|null> = newLocalStorage("currentContext", null);
@@ -96,21 +97,22 @@ function listenForParseMessage(request: ParseMessage, sender: chrome.runtime.Mes
 
             // Write the new data to the preview data
             if(request.settings.previewData) {
-                let previewData = PREVIEW_DATA.get();
-                const newPreviewData : ParsedDataPreview = {
-                    parentContextUid: request.parentContextUid,
-                    previewUid: request.uid,
-                    templateName: request.template.name,
-                    page: {
-                        url: request.url,
-                        parsedFields: parsedFields
-                    }
-                };
-                previewData.push(newPreviewData);
-                PREVIEW_DATA.set(previewData);
-
+                if(gateExistingContext(request.url, request.template.name)) {
+                    let previewData = PREVIEW_DATA.get();
+                    const newPreviewData : ParsedDataPreview = {
+                        parentContextUid: request.parentContextUid,
+                        previewUid: request.uid,
+                        templateName: request.template.name,
+                        page: {
+                            url: request.url,
+                            parsedFields: parsedFields
+                        }
+                    };
+                    previewData.push(newPreviewData);
+                    PREVIEW_DATA.set(previewData);
+                }
             } else {
-                genNewContextAndSave(
+                const succeeded = genNewContextAndSave(
                     request.parentContextUid,
                     [],
                     request.uid,
@@ -120,6 +122,9 @@ function listenForParseMessage(request: ParseMessage, sender: chrome.runtime.Mes
                     request.template.name,
                     request.settings,
                 );
+                if(!succeeded) {
+                    sendBasicNotification("Parsing Failed", "Parsing for this page has failed");
+                }
             }
 
             sendResponse({})
@@ -127,7 +132,6 @@ function listenForParseMessage(request: ParseMessage, sender: chrome.runtime.Mes
         else {
             sendResponse({})
         }
-
     }
     return true
 }
@@ -229,6 +233,17 @@ function listenForTabChanged(activeInfo: TabActiveInfo) {
     }
 }
 
+function findContextForPage(url: string, templateName: string) : ParsingContext|null {
+    for(let context of Object.values(CONTEXT_MAP.get())) {
+        if(context != null) {
+            if (context.page.url === url && context.templateName === templateName) {
+                return context;
+            }
+        }
+    }
+    return null;
+}
+
 function deleteContextAndSubTree(contextUid: string) {
     let contexts = CONTEXT_MAP.get();
     const rootContext = contexts[contextUid];
@@ -282,7 +297,7 @@ function clearPreviewDataAndSave(previewDataUid: string) : void {
 
 // Creates a new context, saves it, then updates the parent context and saves it if the settings call for it
 function genNewContextAndSave(parentContextUid: string|null, childContextUids: string[], uid: string, name: string, url: string, parsedFields: ParsedField[], templateName: string, settings: ParseSettings) : boolean {
-    if(name == null || name.trim() === '') {
+    if(name == null || name.trim() === '' || templateName == null || templateName.trim() === '') {
         return false;
     }
 
@@ -319,17 +334,29 @@ function changeCurrentContext(newContext: ParsingContext|null) {
 
     const validTemplates = genValidTemplatesForContext(newContext, TEMPLATE_MAP.get());
     const currentTemplate = CURRENT_TEMPLATE.get();
-    if(currentTemplate != null) {
-        // If the current template is not in the map of valid templates (which it won't be without cycles which don't exist yet)
-        //  Then we need to change the current template to be something from the valid templates map
-        if(newContext == null || !validTemplates[currentTemplate.name]) {
-            const newTemplate = Object.values(validTemplates).find((value) => value != null);
-            CURRENT_TEMPLATE.set(newTemplate === undefined ? null : newTemplate);
-        }
+    // If the current template is not in the map of valid templates (which it won't be without cycles which don't exist yet)
+    //  Then we need to change the current template to be something from the valid templates map
+    if(newContext == null || currentTemplate == null || !validTemplates[currentTemplate.name]) {
+        const newTemplate = Object.values(validTemplates).find((value) => value != null);
+        CURRENT_TEMPLATE.set(newTemplate === undefined ? null : newTemplate);
     }
 }
 
+function gateExistingContext(url: string, templateName: string) : boolean {
+    const existingContext = findContextForPage(url, templateName);
+    if(existingContext != null) {
+        //TODO---Replace with a more intelligent way of handling this: https://github.com/MrLittleKitty/primitive-scrape/issues/4
+        sendBasicNotification("Duplicate Page", "A context with the name "+existingContext.name+" already exists with the same URL and template. Please delete it in order to parse again.");
+        return false;
+    }
+    return true;
+}
+
 function saveData(context: ParsingContext, updatedParentContext: ParsingContext|null, settings: ParseSettings) {
+    if(!gateExistingContext(context.page.url, context.templateName)) {
+        return;
+    }
+
     let newContextMap = {
         ...CONTEXT_MAP.get(),
         [context.uid]: context

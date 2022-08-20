@@ -29,7 +29,7 @@ function mapToMenuItem(template: ParsingTemplate) {
 
 interface TemplateViewerComponentProps {
     sx: SxProps<Theme>,
-    currentTemplate: ParsingTemplate,
+    currentTemplate: ParsingTemplate|null,
     validTemplates: ParsingTemplateMap,
 
     iconClicked: () => void,
@@ -47,7 +47,7 @@ export default class TemplateViewerComponent extends React.Component<TemplateVie
 
     handleTemplateChange = (template: ParsingTemplate) => {
         const selectedTemplateName = template.name;
-        if(selectedTemplateName !== this.props.currentTemplate.name) {
+        if(this.props.currentTemplate == null || selectedTemplateName !== this.props.currentTemplate.name) {
             const value = this.props.validTemplates[selectedTemplateName]
             if(value) {
                 this.props.templateChangedFunc(value);
@@ -67,8 +67,12 @@ export default class TemplateViewerComponent extends React.Component<TemplateVie
         );
     }
 
-    buildChangeTemplateTree = (currentTemplate: ParsingTemplate, templates: ParsingTemplateMap) : JSX.Element[] => {
-        return Object.values(templates).filter(template => template.name !== this.props.currentTemplate.name).map(template => this.buildTemplateButton(template));
+    buildChangeTemplateTree = (currentTemplate: ParsingTemplate|null, templates: ParsingTemplateMap) : JSX.Element[] => {
+        let values = Object.values(templates);
+        if(currentTemplate != null) {
+            values = values.filter(template => template.name !== currentTemplate.name)
+        }
+        return values.map(template => this.buildTemplateButton(template));
     }
 
     render() {
@@ -116,7 +120,9 @@ export default class TemplateViewerComponent extends React.Component<TemplateVie
                         height: TEMPLATE_DIMENSIONS.height-HEADER_HEIGHT,
                     }}>
                         <Stack spacing={1}>
-                            {this.buildTemplateButton(this.props.currentTemplate)}
+                            {this.props.currentTemplate != null &&
+                                this.buildTemplateButton(this.props.currentTemplate)
+                            }
 
                             <Divider/>
 
