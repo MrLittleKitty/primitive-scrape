@@ -124,7 +124,7 @@ const UL_REFERENCE_SET :ParsingFieldSet = {
         },
         {
             name: "Description",
-            nodeSelector: "",
+            nodeSelector: "body > article.post > div > div:nth-child(2) > div.meta__post > p > span.meta__detail__date",
             processorFunctionName: TEXT_EXTRACT_NAME,
             processorFunctionArgument: "",
         },

@@ -26,8 +26,13 @@ function extractText(element: Element) : string {
 
     if('childNodes' in element) {
         const childNodes = element.childNodes;
-        if(childNodes != null && childNodes.length === 1) {
-            return _textExtract(childNodes[0]);
+        if(childNodes != null && childNodes.length > 0) {
+            for(let child of childNodes) {
+                const text = _textExtract(child);
+                if(text != null && text.trim() !== '') {
+                    return text;
+                }
+            }
         }
     }
 
