@@ -341,6 +341,7 @@ export default class ExtensionPopupPage extends React.Component<any, ExtensionPo
                 }}
                 currentContext={this.state.currentContext.get()}
                 contexts={this.state.contexts.get()}
+                templateMap={this.state.allTemplates.get()}
                 changeContextCallback={this.sendChangeContextMessage}
               />
           }
