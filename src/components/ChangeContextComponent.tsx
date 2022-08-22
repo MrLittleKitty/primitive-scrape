@@ -1,9 +1,20 @@
-import React from "react";
-import {Box, Divider, Stack, SxProps, Theme, Typography} from "@mui/material";
-import {CHANGE_CONTEXT_DIMENSIONS, HEADER_HEIGHT} from "./PositionsAndDimensions";
+import React, {SyntheticEvent} from "react";
+import {Autocomplete, Box, Divider, IconButton, Stack, SxProps, TextField, Theme, Typography} from "@mui/material";
+import {CHANGE_CONTEXT_DIMENSIONS, HEADER_HEIGHT, TEMPLATE_DIMENSIONS} from "./PositionsAndDimensions";
 import {ContextMap, ParsingContext} from "../parsing/ParsingContext";
 import ButtonBlockComponent from "./ButtonBlockComponent";
 import {ParsingTemplate, ParsingTemplateMap} from "../parsing/ParsingTemplate";
+
+function inParentTree(templateMap: ParsingTemplateMap, templateA: ParsingTemplate, templateB: ParsingTemplate) {
+    let template = templateB;
+    while(template.parentTemplateKey != null && template.parentTemplateKey !== '') {
+        if(template.name === templateA.name || template.parentTemplateKey === templateA.name) {
+            return true;
+        }
+        template = templateMap[template.parentTemplateKey];
+    }
+    return false;
+}
 
 interface ChangeContextComponentProps {
     sx: SxProps<Theme>
@@ -15,13 +26,22 @@ interface ChangeContextComponentProps {
 }
 
 interface ChangeContextComponentState {
-
+    searchInput: string
 }
 
 export default class ChangeContextComponent extends React.Component<ChangeContextComponentProps, ChangeContextComponentState> {
 
     constructor(props: ChangeContextComponentProps) {
         super(props);
+        this.state = {
+            searchInput: "",
+        };
+    }
+
+    changeSearchInput = (event: SyntheticEvent, newValue: string) => {
+        this.setState({
+            searchInput: newValue
+        })
     }
 
     createContextItem = (context: ParsingContext, index: number) => {
@@ -39,9 +59,35 @@ export default class ChangeContextComponent extends React.Component<ChangeContex
         )
     }
 
-    buildTemplateSections = (contextMap: ContextMap, contextCallback: (context: ParsingContext) => void) : JSX.Element[] => {
+    filterContext = (searchInput: string, context: ParsingContext) : boolean => {
+        // Show everything on empty input
+        if(searchInput == null || searchInput.trim() === '') {
+            return true;
+        }
+
+        // Check the name, UID, and template name
+        if(context.name.includes(searchInput) || context.uid.startsWith(searchInput) || context.templateName.includes(searchInput)) {
+            return true;
+        }
+
+        if(context.parentContextUid != null) {
+            const parentContext = this.props.contexts[context.parentContextUid];
+            if(parentContext != null) {
+                return this.filterContext(searchInput, parentContext);
+            }
+        }
+
+        // Check the URL
+        // if(context.page.url.includes(searchInput)) {
+        //     return true;
+        // }
+
+        return false;
+    }
+
+    buildTemplateSections = (contextMap: ContextMap, currentContext: ParsingContext|null, contextCallback: (context: ParsingContext) => void) : JSX.Element[] => {
         const map = new Map<string, ParsingContext[]>();
-        for(let context of Object.values(contextMap)) {
+        for(let context of Object.values(contextMap).filter(context => this.filterContext(this.state.searchInput,context))) {
             const template = context.templateName;
             const value = map.get(template);
             if(value != null) {
@@ -65,22 +111,9 @@ export default class ChangeContextComponent extends React.Component<ChangeContex
             })
         }
 
-        function inParentTree(templateMap: ParsingTemplateMap, templateA: ParsingTemplate, templateB: ParsingTemplate) {
-            let template = templateB;
-            while(template.parentTemplateKey != null && template.parentTemplateKey !== '') {
-                if(template.name === templateA.name || template.parentTemplateKey === templateA.name) {
-                    return true;
-                }
-                template = templateMap[template.parentTemplateKey];
-            }
-            return false;
-        }
-
         entries = entries.sort((a,b) => {
             const templateA = this.props.templateMap[a.templateName];
             const templateB = this.props.templateMap[b.templateName];
-
-            console.log("Comparing", templateA.name, templateB.name);
 
             if(inParentTree(this.props.templateMap, templateB, templateA)) {
                 // A comes first if A is B's parent
@@ -91,13 +124,35 @@ export default class ChangeContextComponent extends React.Component<ChangeContex
             else return 0;
         });
 
+        function buildSubtree(context: ParsingContext) : string[] {
+            let values = [context.uid];
+
+            if(context.childContextsUids.length < 1) {
+                return values;
+            }
+
+            for(let child of context.childContextsUids) {
+                const childContext = contextMap[child];
+                values = [...values, ...buildSubtree(childContext)]
+            }
+            return values;
+        }
+
+        const selectedContexts = new Set<string>();
+        if(currentContext != null) {
+            const subtree = buildSubtree(currentContext);
+            for(let value of subtree) {
+                selectedContexts.add(value);
+            }
+        }
+
         const results : JSX.Element[] = [];
         for(let entry of entries) {
             results.push((
                 <TemplateSection
                     templateName={entry.templateName}
                     contexts={entry.contexts}
-                    selectedContext={null}
+                    selectedContextsUids={selectedContexts}
                     contextClicked={contextCallback}/>
             ))
             results.push((<Divider/>));
@@ -122,7 +177,53 @@ export default class ChangeContextComponent extends React.Component<ChangeContex
                     width: CHANGE_CONTEXT_DIMENSIONS.width-20,
                     height: CHANGE_CONTEXT_DIMENSIONS.height-HEADER_HEIGHT,
                 }}>
-                    {this.buildTemplateSections(this.props.contexts, this.props.changeContextCallback)}
+                    <Box sx={{
+                        width: CHANGE_CONTEXT_DIMENSIONS.width-10,
+                        height: HEADER_HEIGHT,
+                        display: "flex",
+                        textAlign: "center",
+                        alignItems: "center",
+                    }}>
+                        <Typography
+                            sx={{
+                                color: "#404040"
+                            }}
+                            align={"center"}>
+                            Change Context
+                        </Typography>
+
+                        <Box sx={{
+                            flex: 1,
+                            display: "flex",
+                            justifyContent: "end",
+                            alignItems: "start",
+                        }}>
+                            <Autocomplete
+                                sx={{
+                                    width: 200,
+                                    paddingRight: "20px",
+                                }}
+                                size={"small"}
+                                freeSolo
+                                id="free-solo-2-demo"
+                                disableClearable
+                                filterOptions={(x) => x}
+                                inputValue={this.state.searchInput}
+                                onInputChange={this.changeSearchInput}
+                                options={[]}
+                                renderInput={(params) => (
+                                    <TextField
+                                        {...params}
+                                        label="Search Contexts"
+                                    />
+                                )}
+                            />
+                        </Box>
+                    </Box>
+
+                    <Divider/>
+
+                    {this.buildTemplateSections(this.props.contexts, this.props.currentContext, this.props.changeContextCallback)}
                 </Box>
             </Box>
         )
@@ -133,7 +234,7 @@ interface TemplateSectionProps {
     templateName: string
 
     contexts: ParsingContext[],
-    selectedContext: ParsingContext|null,
+    selectedContextsUids: Set<string>,
 
     contextClicked: (context: ParsingContext) => void
 }
@@ -148,7 +249,7 @@ class TemplateSection extends React.Component<TemplateSectionProps, TemplateSect
     }
 
 
-    createContextItem = (context: ParsingContext, index: number) => {
+    createContextItem = (context: ParsingContext, index: number, highLight: boolean) => {
         return (
             <ButtonBlockComponent
                 sx={{
@@ -157,6 +258,8 @@ class TemplateSection extends React.Component<TemplateSectionProps, TemplateSect
                 }}
                 value={context}
                 onClick={this.props.contextClicked}
+                color={highLight ? "#404040" : undefined}
+                textColor={highLight ? "#ececec" : undefined}
             >
                 {context.name}
             </ButtonBlockComponent>
@@ -192,7 +295,7 @@ class TemplateSection extends React.Component<TemplateSectionProps, TemplateSect
                             flex: 1,
                         }}
                     >
-                        {Object.values(this.props.contexts).map(this.createContextItem)}
+                        {Object.values(this.props.contexts).map((item, index) => this.createContextItem(item, index, this.props.selectedContextsUids.has(item.uid)))}
                     </Stack>
                 </Box>
             </>

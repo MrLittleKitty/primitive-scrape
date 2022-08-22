@@ -16,8 +16,8 @@ interface PaperButtonProps {
 }
 
 interface PaperButtonState {
-    elevation: number,
-    backgroundColor: string
+    isMouseDown: boolean,
+    isMouseOver: boolean,
 }
 
 type PaperButtonPropsWithChildren = React.PropsWithChildren<PaperButtonProps>
@@ -27,34 +27,55 @@ export default class PaperButton extends React.Component<PaperButtonPropsWithChi
     constructor(props: PaperButtonPropsWithChildren) {
         super(props);
         this.state = {
-            elevation: 0,
-            backgroundColor: this.props.color,
+            isMouseOver: false,
+            isMouseDown: false,
         }
     }
 
-    isMouseOver = (isMouseOver: boolean) => {
-        const newBackgroundColor = isMouseOver ? (this.props.hoverColor ? this.props.hoverColor : this.state.backgroundColor) : this.props.color
-        this.setState({
-            elevation: isMouseOver ? this.props.hoverElevation : 0,
-            backgroundColor: newBackgroundColor
-        })
+    genColor = (isMouseDown: boolean, isMouseOver: boolean) : string => {
+        if(isMouseDown) {
+            return this.props.clickColor;
+        }
+
+        if(isMouseOver) {
+            return this.props.hoverColor ? this.props.hoverColor : this.props.color;
+        }
+
+        return this.props.color;
     }
 
-    isMouseDown = (isMouseDown: boolean) => {
-        const newElevation = isMouseDown ? 0 : this.props.hoverElevation;
-        this.setState({
-            backgroundColor: isMouseDown ? this.props.clickColor : (this.props.hoverColor ? this.props.hoverColor : this.props.color),
-            elevation: newElevation
-        })
+    genElevation = (isMouseDown: boolean, isMouseOver: boolean) : number => {
+        if(isMouseOver) {
+            return this.props.hoverElevation;
+        }
+
+        return 0;
     }
+
+    // isMouseOver = (isMouseOver: boolean) => {
+    //     const newBackgroundColor = isMouseOver ? (this.props.hoverColor ? this.props.hoverColor : this.state.backgroundColor) : this.props.color
+    //     this.setState({
+    //         elevation: isMouseOver ? this.props.hoverElevation : 0,
+    //         backgroundColor: newBackgroundColor
+    //     })
+    // }
+    //
+    // isMouseDown = (isMouseDown: boolean) => {
+    //     const newElevation = isMouseDown ? 0 : this.props.hoverElevation;
+    //     this.setState({
+    //         backgroundColor: isMouseDown ? this.props.clickColor : (this.props.hoverColor ? this.props.hoverColor : this.props.color),
+    //         elevation: newElevation
+    //     })
+    // }
 
     render() {
+        const color = this.genColor(this.state.isMouseDown, this.state.isMouseOver);
         return (
             <Paper
-                elevation={this.state.elevation}
+                elevation={this.genElevation(this.state.isMouseDown, this.state.isMouseOver)}
                 sx={{
                     ...this.props.sx,
-                    backgroundColor: this.state.backgroundColor
+                    backgroundColor: color
                 }}
             >
                 <Box sx={{
@@ -69,18 +90,23 @@ export default class PaperButton extends React.Component<PaperButtonPropsWithChi
                             flex: 1,
                             minWidth: "100%",
                             '&:hover': {
-                                 backgroundColor: this.state.backgroundColor
+                                 backgroundColor: color
                             }
                         }}
 
                         disableRipple={true}
                         disableFocusRipple={true}
 
-                        onMouseDown={() => this.isMouseDown(true)}
-                        onMouseUp={() => this.isMouseDown(false)}
+
                         onClick={this.props.onClick}
-                        onMouseOver={() => this.isMouseOver(true)}
-                        onMouseOut={() => this.isMouseOver(false)}>
+
+                        onMouseDown={() => this.setState({ isMouseDown: true})}
+                        onMouseUp={() => this.setState({ isMouseDown: false})}
+                        onMouseOver={() => this.setState({ isMouseOver: true})}
+                        onMouseOut={() => this.setState({
+                            isMouseOver: false,
+                            isMouseDown: false,
+                        })}>
 
                         <Typography sx={{
                             color: this.props.textColor
