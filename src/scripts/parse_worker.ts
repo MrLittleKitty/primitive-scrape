@@ -97,7 +97,7 @@ function listenForParseMessage(request: ParseMessage, sender: chrome.runtime.Mes
 
             // Write the new data to the preview data
             if(request.settings.previewData) {
-                if(gateExistingContext(request.url, request.template.name)) {
+                if(gateExistingContext(request.parentContextUid, request.url, request.template.name)) {
                     let previewData = PREVIEW_DATA.get();
                     const newPreviewData : ParsedDataPreview = {
                         parentContextUid: request.parentContextUid,
@@ -233,17 +233,6 @@ function listenForTabChanged(activeInfo: TabActiveInfo) {
     }
 }
 
-function findContextForPage(url: string, templateName: string) : ParsingContext|null {
-    for(let context of Object.values(CONTEXT_MAP.get())) {
-        if(context != null) {
-            if (context.page.url === url && context.templateName === templateName) {
-                return context;
-            }
-        }
-    }
-    return null;
-}
-
 function deleteContextAndSubTree(contextUid: string) {
     let contexts = CONTEXT_MAP.get();
     const rootContext = contexts[contextUid];
@@ -342,18 +331,26 @@ function changeCurrentContext(newContext: ParsingContext|null) {
     }
 }
 
-function gateExistingContext(url: string, templateName: string) : boolean {
-    const existingContext = findContextForPage(url, templateName);
-    if(existingContext != null) {
-        //TODO---Replace with a more intelligent way of handling this: https://github.com/MrLittleKitty/primitive-scrape/issues/4
-        sendBasicNotification("Duplicate Page", "A context with the name "+existingContext.name+" already exists with the same URL and template. Please delete it in order to parse again.");
-        return false;
+function gateExistingContext(parentContext: string|null, url: string, templateName: string) : boolean {
+    // Go through all contexts and find if there is one with same parent, same template, and same url. If there is then deny
+    for(let context of Object.values(CONTEXT_MAP.get())) {
+        if(context != null) {
+            if (context.page.url === url && context.templateName === templateName) {
+                //TODO--So I actually wanted to allow a duplicate context for the same template/url if it was for a different parent,
+                //TODO--  but, then we would get spammed with duplicate contextx when we should really have one for that URL but it should have a list of parents, not a single parent
+                //if(parentContext === context.parentContextUid) {
+                //TODO---Replace with a more intelligent way of handling this: https://github.com/MrLittleKitty/primitive-scrape/issues/4
+                sendBasicNotification("Duplicate Page", "A context with the name "+context.name+" already exists with the same URL and template. Please delete it in order to parse again.");
+                return false;
+               // }
+            }
+        }
     }
     return true;
 }
 
 function saveData(context: ParsingContext, updatedParentContext: ParsingContext|null, settings: ParseSettings) {
-    if(!gateExistingContext(context.page.url, context.templateName)) {
+    if(!gateExistingContext(context.parentContextUid, context.page.url, context.templateName)) {
         return;
     }
 

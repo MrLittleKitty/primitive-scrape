@@ -295,7 +295,7 @@ class TemplateSection extends React.Component<TemplateSectionProps, TemplateSect
                             flex: 1,
                         }}
                     >
-                        {Object.values(this.props.contexts).map((item, index) => this.createContextItem(item, index, this.props.selectedContextsUids.has(item.uid)))}
+                        {Object.values(this.props.contexts).sort((a,b) => a.name.localeCompare(b.name)).map((item, index) => this.createContextItem(item, index, this.props.selectedContextsUids.has(item.uid)))}
                     </Stack>
                 </Box>
             </>
