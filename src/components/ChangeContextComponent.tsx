@@ -5,10 +5,10 @@ import {ContextMap, ParsingContext} from "../parsing/ParsingContext";
 import ButtonBlockComponent from "./ButtonBlockComponent";
 import {ParsingTemplate, ParsingTemplateMap} from "../parsing/ParsingTemplate";
 
-function inParentTree(templateMap: ParsingTemplateMap, templateA: ParsingTemplate, templateB: ParsingTemplate) {
-    let template = templateB;
+function inParentTree(templateMap: ParsingTemplateMap, searchingForTemplate: ParsingTemplate, inParentTreeOfTemplate: ParsingTemplate) {
+    let template = inParentTreeOfTemplate;
     while(template.parentTemplateKey != null && template.parentTemplateKey !== '') {
-        if(template.name === templateA.name || template.parentTemplateKey === templateA.name) {
+        if(template.name === searchingForTemplate.name || template.parentTemplateKey === searchingForTemplate.name) {
             return true;
         }
         template = templateMap[template.parentTemplateKey];
@@ -111,19 +111,6 @@ export default class ChangeContextComponent extends React.Component<ChangeContex
             })
         }
 
-        entries = entries.sort((a,b) => {
-            const templateA = this.props.templateMap[a.templateName];
-            const templateB = this.props.templateMap[b.templateName];
-
-            if(inParentTree(this.props.templateMap, templateB, templateA)) {
-                // A comes first if A is B's parent
-                return 1;
-            } else if(inParentTree(this.props.templateMap, templateA, templateB)) {
-                return -1;
-            }
-            else return 0;
-        });
-
         function buildSubtree(context: ParsingContext) : string[] {
             let values = [context.uid];
 
@@ -145,6 +132,22 @@ export default class ChangeContextComponent extends React.Component<ChangeContex
                 selectedContexts.add(value);
             }
         }
+
+        entries = entries.sort((a,b) => {
+            const templateA = this.props.templateMap[a.templateName];
+            const templateB = this.props.templateMap[b.templateName];
+
+            if(inParentTree(this.props.templateMap, templateB, templateA)) {
+                // Searching for B in parent tree of A.
+                // If B is in it, then B is "greater than" A, meaning B comes 2nd in ascending order
+                return 1;
+            } else if(inParentTree(this.props.templateMap, templateA, templateB)) {
+                // Searching for A in parent tree of B.
+                // If A is in parent tree of B, then B is "less than" A meaning B comes first in ascending order
+                return -1;
+            }
+            else return 0;
+        });
 
         const results : JSX.Element[] = [];
         for(let entry of entries) {
@@ -266,6 +269,27 @@ class TemplateSection extends React.Component<TemplateSectionProps, TemplateSect
         )
     }
 
+    /*
+        Return 1 is B is greater than A,
+        Return -1 if B is less than A,
+        Return 0 if B and A are equal
+     */
+    compareContext = (contextA: ParsingContext, contextB: ParsingContext) : number => {
+        const selectedContextUids = this.props.selectedContextsUids;
+        if(selectedContextUids.has(contextA.uid) && selectedContextUids.has(contextB.uid)) {
+            return contextA.name.localeCompare(contextB.name);
+        } else if(selectedContextUids.has(contextA.uid) && ! selectedContextUids.has(contextB.uid)) {
+            // A is greater than B, so A will come first (because A is highlighted and B is not)
+            return -1;
+        } else if(!selectedContextUids.has(contextA.uid) && selectedContextUids.has(contextB.uid)) {
+            // A is less than B, so B will come first (because B is highlighted and A is not)
+            return 1;
+        } else { //Neither A or B are highlighted
+            // So sort in alphabetical order
+            return contextA.name.localeCompare(contextB.name);
+        }
+    }
+
     render() {
         return (
             <>
@@ -295,7 +319,7 @@ class TemplateSection extends React.Component<TemplateSectionProps, TemplateSect
                             flex: 1,
                         }}
                     >
-                        {Object.values(this.props.contexts).sort((a,b) => a.name.localeCompare(b.name)).map((item, index) => this.createContextItem(item, index, this.props.selectedContextsUids.has(item.uid)))}
+                        {Object.values(this.props.contexts).sort(this.compareContext).map((item, index) => this.createContextItem(item, index, this.props.selectedContextsUids.has(item.uid)))}
                     </Stack>
                 </Box>
             </>
