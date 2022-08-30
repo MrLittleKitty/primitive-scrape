@@ -1,5 +1,5 @@
 import React from "react";
-import {Box, Stack, SxProps, Theme, Typography} from "@mui/material";
+import {Box, Divider, Stack, SxProps, Theme, Typography} from "@mui/material";
 import {CURRENT_CONTEXT_VIEWER_DIMENSIONS, HEADER_HEIGHT} from "./PositionsAndDimensions";
 import {ContextMap, ParsingContext} from "../parsing/ParsingContext";
 import ButtonBlockComponent from "./ButtonBlockComponent";
@@ -27,7 +27,7 @@ export default class CurrentContextViewerComponent extends React.Component<Curre
             return []
         }
         let root = startingContext;
-        let tree = [startingContext]
+        let tree = [];
         while(root.parentContextUid != null) { //TODO---Maybe need to make sure root is never null as well?
             const parent = contextMap[root.parentContextUid]
             tree.push(parent)
@@ -47,10 +47,30 @@ export default class CurrentContextViewerComponent extends React.Component<Curre
             )
         );
         components = components.reverse();
+        components.push((<Divider/>));
+        components.push((
+            <Box sx={{
+                width: CURRENT_CONTEXT_VIEWER_DIMENSIONS.width,
+                height: HEADER_HEIGHT,
+                flex: 1,
+                display: "flex",
+                textAlign: "center",
+                alignItems: "center"
+            }}>
+                <Typography
+                    sx={{
+                        color: "#404040"
+                    }}
+                    align={"center"}>
+                    Current Context
+                </Typography>
+            </Box>
+        ));
+        components.push(this.createContextTreeItem(startingContext));
         return components
     }
 
-    createContextTreeItem = (context: ParsingContext, index: number) => {
+    createContextTreeItem = (context: ParsingContext) => {
         return (
             <ButtonBlockComponent
                 sx={{
@@ -89,7 +109,7 @@ export default class CurrentContextViewerComponent extends React.Component<Curre
                                 color: "#404040"
                             }}
                             align={"center"}>
-                            Current Context
+                            Context Tree
                         </Typography>
                     </Box>
                     <Box sx={{
