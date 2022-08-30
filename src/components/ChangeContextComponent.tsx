@@ -66,7 +66,7 @@ export default class ChangeContextComponent extends React.Component<ChangeContex
         }
 
         // Check the name, UID, and template name
-        if(context.name.includes(searchInput) || context.uid.startsWith(searchInput) || context.templateName.includes(searchInput)) {
+        if(context.name.toLowerCase().includes(searchInput) || context.uid.startsWith(searchInput) || context.templateName.toLowerCase().includes(searchInput)) {
             return true;
         }
 
