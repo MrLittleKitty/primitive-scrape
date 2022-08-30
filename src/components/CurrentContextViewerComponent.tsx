@@ -10,6 +10,7 @@ interface CurrentContextViewerComponentProps {
     currentContext: ParsingContext|null,
 
     contextClicked: (context: ParsingContext|null) => void,
+    currentContextClicked: (context: ParsingContext) => void
 }
 
 interface CurrentContextViewerComponentState {
@@ -66,16 +67,22 @@ export default class CurrentContextViewerComponent extends React.Component<Curre
                 </Typography>
             </Box>
         ));
-        components.push(this.createContextTreeItem(startingContext));
+        components.push((
+            <ButtonBlockComponent
+                sx={{}}
+                value={startingContext}
+                onClick={this.props.currentContextClicked}
+            >
+                {startingContext.name}
+            </ButtonBlockComponent>
+        ));
         return components
     }
 
     createContextTreeItem = (context: ParsingContext) => {
         return (
             <ButtonBlockComponent
-                sx={{
-
-                }}
+                sx={{}}
                 value={context}
                 onClick={this.props.contextClicked}
             >

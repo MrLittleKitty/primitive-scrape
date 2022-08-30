@@ -13,7 +13,8 @@ import {
 import {Box, Typography} from "@mui/material";
 import CurrentContextViewerComponent from "./components/CurrentContextViewerComponent";
 import {
-    CHANGE_CONTEXT_POSITION,
+    CHANGE_CONTEXT_DIMENSIONS,
+    CHANGE_CONTEXT_POSITION, CURRENT_CONTEXT_VIEWER_DIMENSIONS,
     CURRENT_CONTEXT_VIEWER_POSITION,
     MAIN_BUTTON_DIMENSIONS,
     MAIN_BUTTON_POSITION,
@@ -39,6 +40,7 @@ import PaperButton from "./components/PaperButton";
 import ButtonBlockComponent from "./components/ButtonBlockComponent";
 import {sendBasicNotification} from "./chrome/ChromeUtils";
 import {ParseFieldTarget} from "./parsing/ParsedField";
+import ContextDetailsComponent from "./components/ContextDetails";
 
 interface ExtensionPopupPageState {
     contexts: ReadOnlyStorageInterface<ContextMap>
@@ -52,6 +54,8 @@ interface ExtensionPopupPageState {
     getPreviewDataFunc: (() => ParsedDataPreview)|null,
 
     parseSettings: StorageInterface<ParseSettings>,
+
+    showContextDetails: ParsingContext|null,
 }
 
 function loadStateFromStorage(state: {[key: string] : any}, key: string, func: (state: any) => void) {
@@ -96,6 +100,7 @@ export default class ExtensionPopupPage extends React.Component<any, ExtensionPo
         parseSettings: newLocalStorage("parseSettings", DEFAULT_SETTINGS),
 
         validTemplates: {},
+        showContextDetails: null,
     }
 
     const setState = this.setState.bind(this)
@@ -297,6 +302,18 @@ export default class ExtensionPopupPage extends React.Component<any, ExtensionPo
     );
   }
 
+    _showDataPreviewComponent = () : boolean => {
+        return this.state.previewingData.get().length > 0 && this.state.showContextDetails == null;
+    }
+
+    _showChangeContextComponent = () : boolean => {
+        return this.state.previewingData.get().length < 1 && this.state.showContextDetails == null;
+    }
+
+    _showContextDetailsComponent = () : boolean => {
+        return this.state.previewingData.get().length < 1 && this.state.showContextDetails != null;
+    }
+
   render() {
       //const template = this.state.currentTemplate.get();
       // if(template == null || Object.values(this.state.validTemplates).length < 1 || Object.values(this.state.allTemplates.get()).length < 1) {
@@ -331,9 +348,35 @@ export default class ExtensionPopupPage extends React.Component<any, ExtensionPo
               currentContext={this.state.currentContext.get()}
               contexts={this.state.contexts.get()}
               contextClicked={this.sendChangeContextMessage}
+              currentContextClicked={(context) => {
+                  let newContext : ParsingContext|null = context;
+                  if(this.state.showContextDetails != null && this.state.showContextDetails.uid === newContext.uid) {
+                      newContext = null;
+                  }
+                  this.setState({
+                      showContextDetails: newContext
+                  })
+              }}
           />
 
-          {previewData.length < 1 &&
+          {this._showContextDetailsComponent() &&
+               <ContextDetailsComponent
+                   viewingContext={this.state.showContextDetails as ParsingContext}
+                   contexts={this.state.contexts.get()}
+                   deleteButtonEnabled={false}
+                   changeContextClick={(context) => this.setState({
+                       showContextDetails: context
+                   })}
+                   width={CHANGE_CONTEXT_DIMENSIONS.width}
+                   height={CHANGE_CONTEXT_DIMENSIONS.height}
+                   sx={{
+                       position: "absolute",
+                       ...CHANGE_CONTEXT_POSITION,
+                   }}
+               />
+          }
+
+          {this._showChangeContextComponent() &&
               <ChangeContextComponent
                 sx={{
                     position: "absolute",
@@ -346,7 +389,7 @@ export default class ExtensionPopupPage extends React.Component<any, ExtensionPo
               />
           }
 
-            {previewData.length > 0 &&
+            {this._showDataPreviewComponent() &&
                 <ScrapedDataPreviewComponent
                     sx={{
                         position: "absolute",

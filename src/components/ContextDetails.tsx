@@ -1,7 +1,7 @@
 import {ContextMap, ParsingContext} from "../parsing/ParsingContext";
 import React from "react";
 import ButtonBlockComponent from "./ButtonBlockComponent";
-import {Box, Stack, Typography} from "@mui/material";
+import {Box, Stack, SxProps, Theme, Typography} from "@mui/material";
 import {DataGrid, GridColDef} from "@mui/x-data-grid";
 import {ParsedField} from "../parsing/ParsedField";
 
@@ -35,6 +35,7 @@ interface ContexContextDetailsComponentProps {
 
     width: number,
     height: number,
+    sx?: SxProps<Theme>
 }
 
 interface ContexContextDetailsComponentState {
@@ -73,6 +74,7 @@ export default class ContextDetailsComponent extends React.Component<ContexConte
             <Box sx={{
                 height: this.props.height,
                 width: this.props.width,
+                ...(this.props.sx ? this.props.sx : {})
             }}>
                 <Typography>
                     Context Name: {this.props.viewingContext.name}
