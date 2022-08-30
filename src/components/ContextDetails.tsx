@@ -32,6 +32,9 @@ interface ContexContextDetailsComponentProps {
     deleteButtonClicked?: (context: ParsingContext) => void
 
     changeContextClick: (context: ParsingContext) => void,
+
+    width: number,
+    height: number,
 }
 
 interface ContexContextDetailsComponentState {
@@ -68,8 +71,8 @@ export default class ContextDetailsComponent extends React.Component<ContexConte
     render() {
         return (
             <Box sx={{
-                height: 1000,
-                width: 600,
+                height: this.props.height,
+                width: this.props.width,
             }}>
                 <Typography>
                     Context Name: {this.props.viewingContext.name}
@@ -90,6 +93,11 @@ export default class ContextDetailsComponent extends React.Component<ContexConte
                         }}>
                             <Stack
                                spacing={1}
+                               direction={"row"}
+                               sx={{
+                                   flexWrap: "wrap",
+                                   flex: 1,
+                               }}
                             >
                                 {this.props.viewingContext.childContextsUids.map(uid => this.genButtonBlock(this.props.contexts[uid]))}
                             </Stack>
@@ -109,8 +117,8 @@ export default class ContextDetailsComponent extends React.Component<ContexConte
                 }
                 <Box sx={{
                     display: "flex",
-                    height: 500,
-                    width: 600,
+                    height: this.props.height/2,
+                    width: this.props.width,
                 }}>
                     <Box sx={{
                         flex: 1

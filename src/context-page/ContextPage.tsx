@@ -84,6 +84,8 @@ export default class ContextPage extends React.Component<any, ContextPageState> 
                    })}
                    deleteButtonEnabled={true}
                    deleteButtonClicked={this.sendDeleteMessage}
+                   width={600}
+                   height={1000}
                />
             </Box>
         );
