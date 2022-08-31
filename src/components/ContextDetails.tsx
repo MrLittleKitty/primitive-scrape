@@ -1,7 +1,7 @@
 import {ContextMap, ParsingContext} from "../parsing/ParsingContext";
 import React from "react";
 import ButtonBlockComponent from "./ButtonBlockComponent";
-import {Box, Stack, SxProps, Theme, Typography} from "@mui/material";
+import {Box, Divider, Stack, SxProps, Theme, Typography} from "@mui/material";
 import {DataGrid, GridColDef} from "@mui/x-data-grid";
 import {ParsedField} from "../parsing/ParsedField";
 
@@ -79,12 +79,21 @@ export default class ContextDetailsComponent extends React.Component<ContexConte
                 <Typography>
                     Context Name: {this.props.viewingContext.name}
                 </Typography>
+
+                <Divider/>
+
                 <Typography>
                     Context Uid: {this.props.viewingContext.uid}
                 </Typography>
+
+                <Divider/>
+
                 <Typography>
                     Template Name: {this.props.viewingContext.templateName}
                 </Typography>
+
+                <Divider/>
+
                 {this.props.viewingContext.childContextsUids.length > 0 &&
                     <Box>
                         <Typography>
@@ -104,6 +113,8 @@ export default class ContextDetailsComponent extends React.Component<ContexConte
                                 {this.props.viewingContext.childContextsUids.map(uid => this.genButtonBlock(this.props.contexts[uid]))}
                             </Stack>
                         </Box>
+
+                        <Divider/>
                     </Box>
                 }
 
@@ -115,6 +126,8 @@ export default class ContextDetailsComponent extends React.Component<ContexConte
                         <Box>
                             {this.genButtonBlock(this.props.contexts[this.props.viewingContext.parentContextUid])}
                         </Box>
+
+                        <Divider/>
                     </Box>
                 }
                 <Box sx={{
@@ -135,13 +148,17 @@ export default class ContextDetailsComponent extends React.Component<ContexConte
                     </Box>
                 </Box>
                 {this.props.deleteButtonEnabled &&
-                    <ButtonBlockComponent
-                        sx={{}}
-                        value={this.props.viewingContext}
-                        onClick={(value) => this.props.deleteButtonClicked ? this.props.deleteButtonClicked(value) : {}}
-                    >
-                        [DANGER] Delete this Context and all Children
-                    </ButtonBlockComponent>
+                    <Box>
+                        <Divider/>
+
+                        <ButtonBlockComponent
+                            sx={{}}
+                            value={this.props.viewingContext}
+                            onClick={(value) => this.props.deleteButtonClicked ? this.props.deleteButtonClicked(value) : {}}
+                        >
+                            [DANGER] Delete this Context and all Children
+                        </ButtonBlockComponent>
+                    </Box>
                 }
             </Box>
         );

@@ -10,12 +10,12 @@ import {
     TYPE_SAVE_PREVIEW_DATA,
     TYPE_SCRAPE
 } from "./chrome/MessagePassing";
-import {Box, Typography} from "@mui/material";
+import {Box, IconButton, Typography} from "@mui/material";
 import CurrentContextViewerComponent from "./components/CurrentContextViewerComponent";
 import {
     CHANGE_CONTEXT_DIMENSIONS,
     CHANGE_CONTEXT_POSITION, CURRENT_CONTEXT_VIEWER_DIMENSIONS,
-    CURRENT_CONTEXT_VIEWER_POSITION,
+    CURRENT_CONTEXT_VIEWER_POSITION, HEADER_HEIGHT,
     MAIN_BUTTON_DIMENSIONS,
     MAIN_BUTTON_POSITION,
     SETTINGS_POSITION,
@@ -41,6 +41,7 @@ import ButtonBlockComponent from "./components/ButtonBlockComponent";
 import {sendBasicNotification} from "./chrome/ChromeUtils";
 import {ParseFieldTarget} from "./parsing/ParsedField";
 import ContextDetailsComponent from "./components/ContextDetails";
+import ClearIcon from "@mui/icons-material/Clear";
 
 interface ExtensionPopupPageState {
     contexts: ReadOnlyStorageInterface<ContextMap>
@@ -200,6 +201,9 @@ export default class ExtensionPopupPage extends React.Component<any, ExtensionPo
           type: TYPE_CHANGE_CURRENT_CONTEXT,
           contextUid: context != null ? context.uid : null,
       });
+      this.setState({
+          showContextDetails: null
+      });
   }
 
   sendChangeTemplateMessage = (template: ParsingTemplate) => {
@@ -302,6 +306,73 @@ export default class ExtensionPopupPage extends React.Component<any, ExtensionPo
     );
   }
 
+  _wrapContextDetailsComponent = () : JSX.Element => {
+      return (
+          <Box sx={{
+              position: "absolute",
+              ...CHANGE_CONTEXT_POSITION,
+          }}>
+              <Box sx={{
+                  marginLeft: "10px",
+                  marginRight: "10px",
+              }}>
+                  <Box sx={{
+                      width: CHANGE_CONTEXT_DIMENSIONS.width-20,
+                      height: HEADER_HEIGHT,
+                      flex: 1,
+                      display: "flex",
+                      textAlign: "center",
+                      alignItems: "center"
+                  }}>
+                      <Typography
+                          sx={{
+                              color: "#404040"
+                          }}
+                          align={"center"}>
+                          Current Context Details
+                      </Typography>
+
+                      <Box sx={{
+                          padding: 0,
+                          flex: 1,
+                          display: "flex",
+                          justifyContent: "end"
+                      }}>
+                          <IconButton onClick={() => this.setState({
+                              showContextDetails: null
+                          })}>
+                              <ClearIcon fontSize="small"/>
+                          </IconButton>
+                      </Box>
+                  </Box>
+
+                  <Box sx={{
+                      overflowY: "auto",
+                      overflowX: "hidden",
+                      display: "flex",
+                      width: CHANGE_CONTEXT_DIMENSIONS.width-20,
+                      height: CHANGE_CONTEXT_DIMENSIONS.height-HEADER_HEIGHT-5,
+                  }}>
+                      <Box sx={{
+                          flex: 1
+                      }}>
+                          <ContextDetailsComponent
+                              viewingContext={this.state.showContextDetails as ParsingContext}
+                              contexts={this.state.contexts.get()}
+                              deleteButtonEnabled={false}
+                              changeContextClick={(context) => this.setState({
+                                  showContextDetails: context
+                              })}
+                              width={CHANGE_CONTEXT_DIMENSIONS.width-20}
+                              height={CHANGE_CONTEXT_DIMENSIONS.height-HEADER_HEIGHT-5}
+                          />
+                      </Box>
+                  </Box>
+              </Box>
+          </Box>
+      )
+  }
+
     _showDataPreviewComponent = () : boolean => {
         return this.state.previewingData.get().length > 0 && this.state.showContextDetails == null;
     }
@@ -360,20 +431,7 @@ export default class ExtensionPopupPage extends React.Component<any, ExtensionPo
           />
 
           {this._showContextDetailsComponent() &&
-               <ContextDetailsComponent
-                   viewingContext={this.state.showContextDetails as ParsingContext}
-                   contexts={this.state.contexts.get()}
-                   deleteButtonEnabled={false}
-                   changeContextClick={(context) => this.setState({
-                       showContextDetails: context
-                   })}
-                   width={CHANGE_CONTEXT_DIMENSIONS.width}
-                   height={CHANGE_CONTEXT_DIMENSIONS.height}
-                   sx={{
-                       position: "absolute",
-                       ...CHANGE_CONTEXT_POSITION,
-                   }}
-               />
+              this._wrapContextDetailsComponent()
           }
 
           {this._showChangeContextComponent() &&
